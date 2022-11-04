@@ -1,5 +1,7 @@
 from typing import Final
 
+LENGTH: Final = 24
+
 PACKET: Final = {
   'packetFormat': 'uint16',
   'gameMajorVersion': 'uint8',

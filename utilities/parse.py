@@ -43,7 +43,7 @@ def parse_data(data: bytes, index: Ref[int], DataType: typing.Type[T]) -> T:
         return DataType(*[parse_data(data, index, field.type) for
                         field in dataclasses.fields(DataType)])
     raise ValueError(
-        f'Expected BasicType, tuple, GameData, or Optional, got {DataType}.')
+        f'Unexpected type received by parse_data: {DataType}.')
 
 
 def parse(data: bytes) -> pk.Packet:

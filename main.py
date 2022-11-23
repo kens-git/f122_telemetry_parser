@@ -1,6 +1,7 @@
 import argparse
 import sys
 import typing
+import filters.DebugFilter as debug_fil
 import filters.Filter as fil
 import filters.LogFilter as log_fil
 import filters.NullFilter as null_fil
@@ -11,6 +12,8 @@ import parsers.UDPParser as udp
 DEFAULT_PORT: typing.Final[int] = 20777
 
 FILTERS: typing.Dict[str, typing.Tuple[str, typing.Type[fil.Filter]]] = {
+    'debug': ('Logs packet ids to the console for debugging.',
+              debug_fil.DebugFilter),
     'log': ('Logs basic information to the console.', log_fil.LogFilter),
     'null': ('Receives the parsed data but performs no action.',
              null_fil.NullFilter),
@@ -52,5 +55,8 @@ if __name__ == '__main__':
     parser = udp.UDPParser(filter, port)
     try:
         parser.start()
+        while parser.is_running():
+            pass
     except KeyboardInterrupt:
         parser.stop()
+        # TODO: clean up filter

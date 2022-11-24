@@ -1,8 +1,10 @@
 import dataclasses
 import inspect
 import typing
+import constants.constants as const
 import custom_types.basic as bt
-import utilities.data as util
+import utilities.data as du
+import utilities.packet as pu
 import packets.packets as pk
 import packets.packet_data as pd
 
@@ -23,14 +25,10 @@ class Ref(typing.Generic[T]):
         self.value: T = value
 
 
-def get_packet_id(data: bytearray) -> int:
-    return int(util.unpack(data, pk.PACKET_ID_INDEX, bt.UInt8).value)
-
-
 def parse_data(data: bytes, index: Ref[int], DataType: typing.Type[T]) -> T:
     if inspect.isclass(DataType):
         if issubclass(DataType, bt.BasicType):
-            value = util.unpack(data, index.value, DataType)
+            value = du.unpack(data, index.value, DataType)
             index.value += bt.BASIC_TYPE_FORMAT[DataType].size
             return value  # type: ignore
         if issubclass(DataType, pk.EventPacket):
@@ -47,11 +45,11 @@ def parse_data(data: bytes, index: Ref[int], DataType: typing.Type[T]) -> T:
 
 
 def parse(data: bytes) -> pk.Packet:
-    PacketType = pk.PACKET_TYPE[get_packet_id(data)]  # type: ignore
+    PacketType = const.PACKET_TYPE[pu.get_packet_id(data)]  # type: ignore
     if PacketType is pk.EventPacket:
-        event_code = util.to_string(parse_data(
+        event_code = du.to_string(parse_data(
             data, Ref(pk.PACKET_HEADER_LENGTH), pk.EventCode))
-        PacketType = pk.EVENT_DETAILS_TYPE[event_code]
+        PacketType = const.EVENT_DETAILS_TYPE[event_code]
     index = Ref[int](0)
     return PacketType(*[parse_data(data, index, field.type) for
                       field in dataclasses.fields(PacketType)])  # type: ignore

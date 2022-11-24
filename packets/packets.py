@@ -7,7 +7,7 @@ import packets.packet_data as pd
 
 # TODO: type other Finals
 PACKET_HEADER_LENGTH: typing.Final[int] = 24
-PACKET_ID_INDEX: typing.Final[int] = 5
+PACKET_HEADER_ID_INDEX: typing.Final[int] = 5
 
 T = typing.TypeVar('T')
 GameEntityData = typing.Tuple[
@@ -128,28 +128,6 @@ class FlashbackPacket(EventPacket):
 @dataclasses.dataclass
 class ButtonsPacket(EventPacket):
     buttonStatus: bt.UInt32
-
-
-EVENT_DETAILS_TYPE: typing.Final[typing.Dict[str,
-                                             EventPacket]] = {  # type: ignore
-    'SSTA': EventPacket,
-    'SEND': EventPacket,
-    'FTLP': FastestLapPacket,
-    'RTMT': RetirementPacket,
-    'DRSE': EventPacket,
-    'DRSD': EventPacket,
-    'TMPT': TeamMateInPitsPacket,
-    'CHQF': EventPacket,
-    'RCWN': RaceWinnerPacket,
-    'PENA': PenaltyPacket,
-    'SPTP': SpeedTrapPacket,
-    'STLG': StartLightsPacket,
-    'LGOT': EventPacket,
-    'DTSV': DriveThroughPenaltyServedPacket,
-    'SGSV': StopGoPenaltyServedPacket,
-    'FLBK': FlashbackPacket,
-    'BUTN': ButtonsPacket,
-}
 
 
 @dataclasses.dataclass
@@ -330,20 +308,3 @@ class SessionPacket(Packet):
     ruleSet: bt.UInt8
     timeOfDay: bt.UInt32
     sessionLength: bt.UInt8
-
-
-PACKET_TYPE: typing.Final[typing.Dict[int,
-                                      Packet]] = {  # type: ignore
-    0: MotionPacket,
-    1: SessionPacket,
-    2: LapDataPacket,
-    3: EventPacket,
-    4: ParticipantsPacket,
-    5: CarSetupsPacket,
-    6: CarTelemetryPacket,
-    7: CarStatusPacket,
-    8: FinalClassificationPacket,
-    9: LobbyInfoPacket,
-    10: CarDamagePacket,
-    11: SessionHistoryPacket,
-}

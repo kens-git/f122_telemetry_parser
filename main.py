@@ -19,7 +19,7 @@ FILTERS: typing.Dict[str, typing.Tuple[str, typing.Type[fil.Filter]]] = {
              null_fil.NullFilter),
     'session': (
         'Writes all data from sessions to a JSON file.',
-        session_fil.SessionFIlter),
+        session_fil.SessionFilter),
     'replay': (
         'Writes sessions to a JSON file for use with a race replay UI.',
         replay_fil.ReplayFilter),

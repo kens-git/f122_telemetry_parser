@@ -2,6 +2,6 @@ import filters.Filter as fil
 import packets.packets as pk
 
 
-class SessionFIlter(fil.Filter):
+class SessionFilter(fil.Filter):
     def filter(self, packet: pk.Packet):
         pass

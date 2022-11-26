@@ -2,7 +2,8 @@ import abc
 import dataclasses
 import typing
 
-
+# TODO: investigate ways to just refer to instances as just their name,
+#       instead of 'instance.value'.
 class BasicType(abc.ABC):
     def __init__(self, value: typing.Any):
         self.value = value

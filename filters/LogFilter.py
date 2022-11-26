@@ -1,9 +1,13 @@
+import datetime
 import typing
 import constants.constants as const
+from constants.constants import PenaltyId
+import custom_types.basic as bt
 import filters.Filter as fil
 import packets.packet_data as pd
 import packets.packets as pk
 import utilities.data as du
+
 
 PENALTY_STRINGS: typing.Dict[int, str] = {
     0: 'drive through',
@@ -13,7 +17,7 @@ PENALTY_STRINGS: typing.Dict[int, str] = {
     4: 'time penalty',
     5: 'warning',
     6: 'disqualified',
-    7: 'Removed from formation lap',
+    7: 'removed from formation lap',
     8: 'parked too long timer',
     9: 'tire regulations',
     10: 'this lap invalidated',
@@ -56,7 +60,7 @@ INFRINGEMENT_STRINGS: typing.Dict[int, str] = {
     26: 'running wide',
     27: 'corner cutting with a minor time gain',
     28: 'corner cutting with a significant time gain',
-    29: 'corner cutting with a significant time gain',
+    29: 'corner cutting with an extreme time gain',
     30: 'wall riding',
     31: 'using a flashback',
     32: 'resetting to the track',
@@ -85,66 +89,74 @@ INFRINGEMENT_STRINGS: typing.Dict[int, str] = {
 }
 
 
-def print_penalty(penalty_id: int, infraction_id: int, offender: str,
-                  second_driver: typing.Optional[str] = None,
-                  time: typing.Optional[int] = None):
-    p = PENALTY_STRINGS[penalty_id]
-    i = INFRINGEMENT_STRINGS[infraction_id]
-    t = ''
-    if time is not None:
-        t = f'{time}s'
+GENERIC_PENALTY_IDS = (
+    PenaltyId.DRIVE_THROUGH.value, PenaltyId.STOP_GO.value,
+    PenaltyId.GRID_PENALTY.value, PenaltyId.TYRE_REGULATIONS.value)
 
-    match penalty_id:
-        case 0:
-            print(f'{offender} has been assessed a {p} for {i}.')
-        case 1:
-            print(f'{offender} has been assessed a {p} for {i}.')
-        case 2:
-            print(f'{offender} has been assessed a {p} for {i}.')
-        case 3:
-            pass
-        case 4:
-            q = ''
-            if second_driver is not None:
-                q = f' with {second_driver}'
-            print(f'{offender} has been assessed a {t} {p} for {i}{q}.')
-        case 5:
-            q = ''
-            if second_driver is not None:
-                q = f' with {second_driver}'
-            print(f'{offender} has been issued a warning for {i}{q}.')
-        case 6:
-            print(f'{offender} has been disqualified for {i}.')
-        case 7:
-            print(f'{offender} has been {p} for {i}')
-        case 8:
-            print(f'{offender} has been assessed a {p} for {i}')
-        case 9:
-            print(f'{offender} has been assessed a {p} for {i}')
-        case 10:
-            print(f'{offender} has {p} for {i}')
-        case 11:
-            print(f'{offender} has {p} for {i}')
-        case 12:
-            print(f'{offender} has {p} for {i}')
-        case 13:
-            print(f'{offender} has {p} for {i}')
-        case 14:
-            print(f'{offender} has {p} for {i}')
-        case 15:
-            print(f'{offender} has {p} for {i}')
-        case 16:
-            pass
-        case 17:
-            pass
-        case _:
-            pass
+LAP_INVALIDATION_PENALTY_IDS = (
+    PenaltyId.THIS_LAP_INVALIDATED.value,
+    PenaltyId.THIS_AND_NEXT_LAP_INVALIDATED.value,
+    PenaltyId.THIS_LAP_INVALIDATED_WITHOUT_REASON.value,
+    PenaltyId.LAP_INVALIDATED_WITHOUT_REASON.value,
+    PenaltyId.THIS_AND_PREVIOUS_LAP_INVALIDATED.value,
+    PenaltyId.THIS_AND_PREVIOUS_LAP_INVALIDATED_WITHOUT_REASON.value)
+
+IGNORED_PENALTY_IDS = (
+    PenaltyId.PENALTY_REMINDER.value,
+    PenaltyId.PARKED_TOO_LONG_TIMER.value,
+    PenaltyId.RETIRED.value,
+    PenaltyId.BLACK_FLAG_TIMER.value)
+
+
+def print_with_session_timestamp(timestamp: float, string: str):
+    time_string = (str(datetime.timedelta(seconds=timestamp))[:-3] if
+                   timestamp != 0 else '0:00:00.000')
+    print(f'[{time_string}] {string}')
+
+
+def create_time_of_day_string(timestamp: int) -> str:
+    return str(datetime.timedelta(minutes=timestamp))
+
+
+def create_penalty_string(
+        penalty_id: int, infringement_id: int, offender: str,
+        second_driver: typing.Optional[str] = None,
+        time: typing.Optional[int] = None):
+    penalty = PENALTY_STRINGS[penalty_id]
+    infringement = INFRINGEMENT_STRINGS[infringement_id]
+    if penalty_id in GENERIC_PENALTY_IDS:
+        return f'{offender} has been assessed a {penalty} for {infringement}.'
+    if penalty_id in LAP_INVALIDATION_PENALTY_IDS:
+        return f'{offender} has {penalty} for {infringement}.'
+    if penalty_id == PenaltyId.REMOVED_FROM_FORMATION_LAP.value:
+        return f'{offender} has been {penalty} for {infringement}.'
+    second_driver = (f' with {second_driver}'
+                     if second_driver is not None else '')
+    if penalty_id == PenaltyId.TIME_PENALTY.value:
+        time_str = f'{time}s' if time is not None else ''
+        return f'{offender} has been assessed a {time_str} {penalty} for \
+{infringement}{second_driver}.'
+    if penalty_id == PenaltyId.WARNING.value:
+        return f'{offender} has been issued a warning for \
+{infringement}{second_driver}.'
+    if penalty_id == PenaltyId.DISQUALIFIED.value:
+        return f'{offender} has been disqualified for \
+{infringement}{second_driver}.'
+    raise ValueError('Unhandled penalty id in create_penalty_string')
+
+
+def get_driver_name(driver_id: int, fallback_name: str):
+    try:
+        return const.DRIVER_NAMES[driver_id]
+    except KeyError:
+        pass
+    return fallback_name
 
 
 class LogFilter(fil.Filter):
     def __init__(self):
         self.data = {}
-        self.packet_count: int = 0
+        self.session_displayed = False
         self.participants: typing.Optional[
             pk.GameEntityData[pd.ParticipantsData]] = None
         self.numActiveCars: int = 0
@@ -154,77 +166,112 @@ class LogFilter(fil.Filter):
         match packet.packetId.value:
             case 1:
                 self._filter_session(packet)
-            case 2:
-                self._filter_lap_data(packet)
             case 3:
                 self._filter_event(packet)
             case 4:
                 self._filter_participants(packet)
-            case 10:
-                self._filter_car_damage(packet)
             case _:
-                pass  # TODO
-        self.packet_count += 1
+                pass
+
+    def _get_driver_name(self, vehicle_index: int):
+        participant = self.participants[vehicle_index]
+        return get_driver_name(
+            participant.driverId.value, du.to_string(participant.name))
 
     def _filter_session(self, packet: pk.SessionPacket):
-        pass
-
-    def _filter_lap_data(self, packet: pk.LapDataPacket):
-        pass
+        if self.session_displayed is True:
+            return
+        self.session_displayed = True
+        print(f'\t{const.TRACK_NAMES[packet.trackId.value]}')
+        print(f'\t{const.SESSION_TEXT[packet.sessionType.value]}')
+        print(f'\t{create_time_of_day_string(packet.timeOfDay.value)}')
+        print(f'\t{const.WEATHER_TEXT[packet.weather.value]}')
+        print(f'\tAir: {packet.airTemperature.value}°')
+        print(f'\tTrack: {packet.trackTemperature.value}°')
 
     def _filter_event(self, packet: pk.EventPacket):
         match du.to_string(packet.eventStringCode):
             case 'SSTA':
-                print('Session started.')
+                print_with_session_timestamp(
+                    packet.sessionTime.value, 'Session started.')
             case 'SEND':
-                print('Session ended.')
+                print_with_session_timestamp(
+                    packet.sessionTime.value, 'Session ended.')
+                self._reset()
             case 'FTLP':
-                # packet = typing.cast(pk.FastestLapPacket, packet)
-                print('__Driver__ has set the fastest lap of __time__.')
+                packet = typing.cast(pk.FastestLapPacket, packet)
+                driver_name = self._get_driver_name(packet.vehicleIdx.value)
+                print_with_session_timestamp(
+                    packet.sessionTime.value,
+                    f'{driver_name} has set the fastest lap time of \
+{str(datetime.timedelta(seconds=packet.lapTime.value))[3:-3]}.')
             case 'RTMT':
-                print('__Driver__ has retired from the session.')
+                packet = typing.cast(pk.RetirementPacket, packet)
+                driver_name = self._get_driver_name(packet.vehicleIdx.value)
+                print_with_session_timestamp(
+                    packet.sessionTime.value,
+                    f'{driver_name} has retired from the session.')
             case 'DRSE':
-                print('DRS has been enabled.')
+                print_with_session_timestamp(
+                    packet.sessionTime.value, 'DRS has been enabled.')
             case 'DRSD':
-                print('DRS has been disabled.')
+                print_with_session_timestamp(
+                    packet.sessionTime.value, 'DRS has been disabled.')
             case 'TMPT':
-                print('Your teammate is in the pits.')
+                print_with_session_timestamp(
+                    packet.sessionTime.value, 'Your teammate is in the pits.')
             case 'CHQF':
-                print('The chequered flag has been waved.')
+                print_with_session_timestamp(
+                    packet.sessionTime.value,
+                    'The chequered flag has been waved.')
             case 'RCWN':
-                print('__Driver__ has been declared the winner.')
+                packet = typing.cast(pk.RaceWinnerPacket, packet)
+                driver_name = self._get_driver_name(packet.vehicleIdx.value)
+                print_with_session_timestamp(
+                    packet.sessionTime.value,
+                    f'{driver_name} has been declared the winner.')
             case 'PENA':
                 packet = typing.cast(pk.PenaltyPacket, packet)
-                # ignore reminder, timer penalty events and retired penalties.
-                if packet.penaltyType.value in (3, 8, 16, 17):
+                if packet.penaltyType.value in IGNORED_PENALTY_IDS:
                     return
-                s = packet.otherVehicleIdx.value
-                time = None
-                if packet.time.value != 255:
-                    time = packet.time.value
-                # TODO: assumes participants is initialized
-                print_penalty(
+                other_vehicle = packet.otherVehicleIdx.value
+                second_driver = (self._get_driver_name(other_vehicle)
+                                 if other_vehicle != 255 else None)
+                time = packet.time.value if packet.time.value != 255 else None
+                p_string = create_penalty_string(
                     packet.penaltyType.value,
                     packet.infringementType.value,
-                    du.to_string(self.participants[packet.vehicleIdx.value].name),
-                    second_driver=du.to_string(
-                        self.participants[s].name) if s != 255 else None,
-                    time=time)
+                    self._get_driver_name(packet.vehicleIdx.value),
+                    second_driver=second_driver, time=time)
+                print_with_session_timestamp(
+                    packet.sessionTime.value, p_string)
             case 'SPTP':
                 pass
             case 'STLG':
                 packet = typing.cast(pk.StartLightsPacket, packet)
-                print('*' * packet.numLights.value)
+                print_with_session_timestamp(
+                    packet.sessionTime.value, '*' * packet.numLights.value)
             case 'LGOT':
-                print('It\'s lights out and away we go!')
+                print_with_session_timestamp(
+                    packet.sessionTime.value,
+                    'It\'s lights out and away we go!')
             case 'DTSV':
-                print('__Driver__ has served a drive through penalty.')
+                packet = typing.cast(pk.DriveThroughPenaltyServedPacket,
+                                     packet)
+                driver_name = self._get_driver_name(packet.vehicleIdx.value)
+                print_with_session_timestamp(
+                    packet.sessionTime.value,
+                    f'{driver_name} has served a drive through penalty.')
             case 'SGSV':
-                print('__Driver__ has served a stop-and-go penalty.')
+                packet = typing.cast(pk.StopGoPenaltyServedPacket,
+                                     packet)
+                driver_name = self._get_driver_name(packet.vehicleIdx.value)
+                print_with_session_timestamp(
+                    packet.sessionTime.value,
+                    f'{driver_name} has served a stop-and-go penalty.')
             case 'FLBK':
-                print('Flashback initiated.')
-            case 'BUTN':
-                pass
+                print_with_session_timestamp(
+                    packet.sessionTime.value, 'Flashback initiated.')
             case _:
                 pass
 
@@ -234,5 +281,7 @@ class LogFilter(fil.Filter):
         self.participants = packet.participants
         self.numActiveCars = packet.numActiveCars.value
 
-    def _filter_car_damage(self, packet: pk.CarDamagePacket):
-        pass
+    def _reset(self):
+        self.numActiveCars = 0
+        self.participants = None
+        self.session_displayed = False

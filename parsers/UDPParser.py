@@ -19,8 +19,8 @@ class UDPParser:
     def start(self):
         self.socket = socket.socket(family=socket.AF_INET,
                                     type=socket.SOCK_DGRAM)
-        threading.Thread(target=self._producer, daemon=True).start()
         threading.Thread(target=self._consumer, daemon=True).start()
+        threading.Thread(target=self._producer, daemon=True).start()
 
     def stop(self):
         if self.socket is not None:
@@ -28,6 +28,8 @@ class UDPParser:
             # TODO: throws an OSError on Windows
             # socket.close()
             self.socket = None
+            with self.data_queue.mutex:
+                self.data_queue.queue.clear()
 
     def _consumer(self):
         while self.socket:

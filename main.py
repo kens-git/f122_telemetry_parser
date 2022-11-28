@@ -1,5 +1,6 @@
 import argparse
 import sys
+import time
 import typing
 import filters.DebugFilter as debug_fil
 import filters.Filter as fil
@@ -52,7 +53,7 @@ if __name__ == '__main__':
     try:
         parser.start()
         while parser.is_running():
-            pass
+            time.sleep(0.016)
     except KeyboardInterrupt:
         parser.stop()
         # TODO: clean up filter

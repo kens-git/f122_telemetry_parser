@@ -6,7 +6,6 @@ import filters.Filter as fil
 import filters.LogFilter as log_fil
 import filters.NullFilter as null_fil
 import filters.ReplayFilter as replay_fil
-import filters.SessionFilter as session_fil
 import parsers.UDPParser as udp
 
 DEFAULT_PORT: typing.Final[int] = 20777
@@ -17,9 +16,6 @@ FILTERS: typing.Dict[str, typing.Tuple[str, typing.Type[fil.Filter]]] = {
     'log': ('Logs basic information to the console.', log_fil.LogFilter),
     'null': ('Receives the parsed data but performs no action.',
              null_fil.NullFilter),
-    'session': (
-        'Writes all data from sessions to a JSON file.',
-        session_fil.SessionFilter),
     'replay': (
         'Writes sessions to a JSON file for use with a race replay UI.',
         replay_fil.ReplayFilter),

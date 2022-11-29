@@ -14,7 +14,8 @@ DEFAULT_PORT: typing.Final[int] = 20777
 FILTERS: typing.Dict[str, typing.Tuple[str, typing.Type[fil.Filter]]] = {
     'debug': ('Logs packet ids to the console for debugging.',
               debug_fil.DebugFilter),
-    'log': ('Logs basic information to the console.', log_fil.LogFilter),
+    'log': ('Logs basic session information to the console.',
+            log_fil.LogFilter),
     'null': ('Receives the parsed data but performs no action.',
              null_fil.NullFilter),
     'replay': (
@@ -56,4 +57,4 @@ if __name__ == '__main__':
             time.sleep(0.016)
     except KeyboardInterrupt:
         parser.stop()
-        # TODO: clean up filter
+        filter.cleanup()  # TODO: UDPParser cleans up filter?

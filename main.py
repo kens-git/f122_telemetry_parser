@@ -31,7 +31,6 @@ def get_args():
         formatter_class=argparse.RawTextHelpFormatter,
         description='Command-line tool for parsing and filtering EA\'s F1 22 \
 UDP telemetry.')
-    # TODO: formatting of arguments:
     arg_parser.add_argument(
         '-p', '--port', type=int,
         help=f'The UDP port to listen on. Defaults to {DEFAULT_PORT}.')
@@ -57,4 +56,4 @@ if __name__ == '__main__':
             time.sleep(0.016)
     except KeyboardInterrupt:
         parser.stop()
-        filter.cleanup()  # TODO: UDPParser cleans up filter?
+        filter.cleanup()

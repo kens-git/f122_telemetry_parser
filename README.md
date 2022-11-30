@@ -49,4 +49,4 @@ python ./main.py -f debug -p 25000
 
 <p>The LogFilter serves as an example for how a filter may be implemented.</p>
 
-<p>Note: filters may lag when the telemetry rate is high, but the queue should ensure all data is eventually filtered. If a real-time filter is required, either turn down the rate to 10-20 Hz, or comment in the issue thread that there's an interest in seeing it fixed sooner rather than later.</p>
+<p>Note: filters may lag when the telemetry rate is high, but the queue should ensure all data is eventually filtered. If a real-time filter is required, either turn down the rate to 10-20 Hz, or comment in the issue thread that there's an interest in seeing this lag fixed sooner rather than later.</p>

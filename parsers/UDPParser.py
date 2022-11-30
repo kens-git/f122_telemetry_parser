@@ -33,7 +33,6 @@ class UDPParser:
 
     def _consumer(self):
         while self.socket:
-            # TODO: will block thread, unblock/destroy queue in stop method
             self.filter.filter(parse.parse(self.data_queue.get()))
 
     def _producer(self):

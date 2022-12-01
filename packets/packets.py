@@ -10,7 +10,7 @@ PACKET_HEADER_LENGTH: typing.Final[int] = 24
 PACKET_HEADER_ID_INDEX: typing.Final[int] = 5
 
 T = typing.TypeVar('T')
-GameEntityData = typing.Tuple[
+GridData = typing.Tuple[
     T, T, T, T, T, T, T, T, T, T,
     T, T, T, T, T, T, T, T, T, T,
     T, T,
@@ -36,22 +36,22 @@ class Packet(abc.ABC):
 
 @dataclasses.dataclass
 class CarDamagePacket(Packet):
-    carDamageData: GameEntityData[pd.CarDamageData]
+    carDamageData: GridData[pd.CarDamageData]
 
 
 @dataclasses.dataclass
 class CarSetupsPacket(Packet):
-    carSetups: GameEntityData[pd.CarSetupsData]
+    carSetups: GridData[pd.CarSetupsData]
 
 
 @dataclasses.dataclass
 class CarStatusPacket(Packet):
-    carStatusData: GameEntityData[pd.CarStatusData]
+    carStatusData: GridData[pd.CarStatusData]
 
 
 @dataclasses.dataclass
 class CarTelemetryPacket(Packet):
-    carTelemetryData: GameEntityData[pd.CarTelemetryData]
+    carTelemetryData: GridData[pd.CarTelemetryData]
     mfdPanelIndex: bt.UInt8
     mfdPanelIndexSecondaryPlayer: bt.UInt8
     suggestedGear: bt.Int8
@@ -133,12 +133,12 @@ class ButtonsPacket(EventPacket):
 @dataclasses.dataclass
 class FinalClassificationPacket(Packet):
     numCars: bt.UInt8
-    classificationData: GameEntityData[pd.FinalClassificationData]
+    classificationData: GridData[pd.FinalClassificationData]
 
 
 @dataclasses.dataclass
 class LapDataPacket(Packet):
-    lapData: GameEntityData[pd.LapDataData]
+    lapData: GridData[pd.LapDataData]
     timeTrialPBCarIdx: bt.UInt8
     timeTrialRivalCarIdx: bt.UInt8
 
@@ -146,12 +146,12 @@ class LapDataPacket(Packet):
 @dataclasses.dataclass
 class LobbyInfoPacket(Packet):
     numPlayers: bt.UInt8
-    lobbyPlayers: GameEntityData[pd.LobbyInfoData]
+    lobbyPlayers: GridData[pd.LobbyInfoData]
 
 
 @dataclasses.dataclass
 class MotionPacket(Packet):
-    carMotionData: GameEntityData[pd.MotionData]
+    carMotionData: GridData[pd.MotionData]
     suspensionPosition: pd.CarCornerData[bt.Float]
     suspensionVelocity: pd.CarCornerData[bt.Float]
     suspensionAcceleration: pd.CarCornerData[bt.Float]
@@ -172,7 +172,7 @@ class MotionPacket(Packet):
 @dataclasses.dataclass
 class ParticipantsPacket(Packet):
     numActiveCars: bt.UInt8
-    participants: GameEntityData[pd.ParticipantsData]
+    participants: GridData[pd.ParticipantsData]
 
 
 @dataclasses.dataclass

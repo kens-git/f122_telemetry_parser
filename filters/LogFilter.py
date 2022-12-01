@@ -158,7 +158,7 @@ class LogFilter(fil.Filter):
         self.data = {}
         self.session_displayed = False
         self.participants: typing.Optional[
-            pk.GameEntityData[pd.ParticipantsData]] = None
+            pk.GridData[pd.ParticipantsData]] = None
         self.numActiveCars: int = 0
 
     def filter(self, packet: pk.Packet):

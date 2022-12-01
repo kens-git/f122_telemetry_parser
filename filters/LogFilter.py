@@ -161,9 +161,6 @@ class LogFilter(fil.Filter):
             pk.GameEntityData[pd.ParticipantsData]] = None
         self.numActiveCars: int = 0
 
-    def cleanup(self):
-        pass
-
     def filter(self, packet: pk.Packet):
         packet = typing.cast(const.PACKET_TYPE[packet.packetId.value], packet)
         match packet.packetId.value:

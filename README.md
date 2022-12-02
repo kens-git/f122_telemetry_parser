@@ -6,7 +6,7 @@
 
 
 <h1>Installation</h1>
-<p>The application doesn't require any third party packages: Git (to clone this repo), and a recent (3.10+) installation of Python is all that is required.</p>
+<p>The application doesn't require any third party packages: a recent (3.10+) installation of Python is all that is required. For complete beginners, the code can be downloaded from this page as a zip file (click on the green 'Code' button, then select 'Download ZIP').</p>
 <p>To actually receive telemetry data a copy of F1 22 for PC with telemetry output turned on is also required.</p>
 
 <h1>Examples</h1>

@@ -11,4 +11,4 @@ def unpack(data: bytes, start: int,
 
 
 def to_string(chars: typing.Tuple[bt.Char, ...]) -> str:
-    return (b''.join(x.value for x in chars)).decode('utf-8')
+    return (b''.join(x.value for x in chars)).decode('utf-8').rstrip('\u0000')

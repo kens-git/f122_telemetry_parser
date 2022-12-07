@@ -15,15 +15,30 @@ class Char(BasicType):
     def __init__(self, value: str):
         super().__init__(value)
 
+    def __eq__(self, rhs: object) -> bool:
+        if not isinstance(rhs, Char):
+            return False
+        return self.value == rhs.value
+
 
 class Double(BasicType):
     def __init__(self, value: float):
         super().__init__(value)
 
+    def __eq__(self, rhs: object) -> bool:
+        if not isinstance(rhs, Double):
+            return False
+        return self.value == rhs.value
+
 
 class Float(BasicType):
     def __init__(self, value: float):
         super().__init__(value)
+
+    def __eq__(self, rhs: object) -> bool:
+        if not isinstance(rhs, Float):
+            return False
+        return self.value == rhs.value
 
 
 class Int8(BasicType):
@@ -32,40 +47,80 @@ class Int8(BasicType):
             raise ValueError('blah')
         super().__init__(value)
 
+    def __eq__(self, rhs: object) -> bool:
+        if not isinstance(rhs, Int8):
+            return False
+        return self.value == rhs.value
+
 
 class UInt8(BasicType):
     def __init__(self, value: int):
         super().__init__(value)
+
+    def __eq__(self, rhs: object) -> bool:
+        if not isinstance(rhs, UInt8):
+            return False
+        return self.value == rhs.value
 
 
 class Int16(BasicType):
     def __init__(self, value: int):
         super().__init__(value)
 
+    def __eq__(self, rhs: object) -> bool:
+        if not isinstance(rhs, Int16):
+            return False
+        return self.value == rhs.value
+
 
 class UInt16(BasicType):
     def __init__(self, value: int):
         super().__init__(value)
+
+    def __eq__(self, rhs: object) -> bool:
+        if not isinstance(rhs, UInt16):
+            return False
+        return self.value == rhs.value
 
 
 class Int32(BasicType):
     def __init__(self, value: int):
         super().__init__(value)
 
+    def __eq__(self, rhs: object) -> bool:
+        if not isinstance(rhs, Int32):
+            return False
+        return self.value == rhs.value
+
 
 class UInt32(BasicType):
     def __init__(self, value: int):
         super().__init__(value)
+
+    def __eq__(self, rhs: object) -> bool:
+        if not isinstance(rhs, UInt32):
+            return False
+        return self.value == rhs.value
 
 
 class Int64(BasicType):
     def __init__(self, value: int):
         super().__init__(value)
 
+    def __eq__(self, rhs: object) -> bool:
+        if not isinstance(rhs, Int64):
+            return False
+        return self.value == rhs.value
+
 
 class UInt64(BasicType):
     def __init__(self, value: int):
         super().__init__(value)
+
+    def __eq__(self, rhs: object) -> bool:
+        if not isinstance(rhs, UInt64):
+            return False
+        return self.value == rhs.value
 
 
 @dataclasses.dataclass

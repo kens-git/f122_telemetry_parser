@@ -33,7 +33,7 @@ class UDPParser:
 
     def _consumer(self):
         while self.socket:
-            self.filter.filter(parse.parse(self.data_queue.get()))
+            self.filter.filter(parse.parse_packet(self.data_queue.get()))
 
     def _producer(self):
         self.socket.bind(('127.0.0.1', self.port))

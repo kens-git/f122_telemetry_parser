@@ -49,54 +49,6 @@ class DataField:
     policy: DataStorePolicy
 
 
-class DataTimeline:
-    def __init__(self, fields: List[DataField]):
-        self.policies: Dict[str, DataStorePolicy] = {
-            field.field: field.policy for field in fields}
-        self.data: Dict[str, List[DataPoint]] = {
-            field.field: [] for field in fields}
-
-    # TODO: data type is dataclass
-    def add(self, timestamp: float, data: Any):
-        # as_dict versus this loop?
-        for field in dataclasses.fields(data):
-            if field.name in self.data:
-                value = getattr(data, field.name)
-                if isinstance(value, tuple):
-                    value = tuple(x.value for x in value)
-                else:
-                    value = value.value
-                match self.policies[field.name]:
-                    case DataStorePolicy.ALL:
-                        self.data[field.name].append(DataPoint(
-                            timestamp, value))
-                    case DataStorePolicy.FIRST:
-                        self.data[field.name].append(DataPoint(
-                            timestamp, value))
-                    case DataStorePolicy.ON_CHANGE:
-                        if not self.data[field.name]:
-                            self.data[field.name].append(DataPoint(
-                                timestamp, value))
-                        else:
-                            previous = self.data[field.name][-1]
-                            if value != previous.value:
-                                self.data[field.name].append(DataPoint(
-                                    timestamp, value))
-                    case _:
-                        raise ValueError('No matching UpdatePolicy.')
-
-
-class GridDataTimeline:
-    def __init__(self, fields: List[DataField]):
-        # TODO: magic number
-        self.data: List[DataTimeline] = [
-            DataTimeline(fields) for _ in range(22)]
-
-    def add(self, timestamp: float, data: List[Any]):
-        for i, d in enumerate(data):
-            self.data[i].add(timestamp, d)
-
-
 class ReplayFilter(fil.Filter):
     def __init__(self):
         self.version = 1
@@ -515,8 +467,6 @@ class ReplayFilter(fil.Filter):
             packet.gamePaused.value, DataStorePolicy.ON_CHANGE)
         set(session_data['numMarshalZones'], packet.sessionTime.value,
             packet.numMarshalZones.value, DataStorePolicy.FIRST)
-        # TODO:
-        # set(session_data['marshalZones'], packet.sessionTime.value,
         set(session_data['safetyCarStatus'], packet.sessionTime.value,
             packet.safetyCarStatus.value, DataStorePolicy.ON_CHANGE)
         set(session_data['networkGame'], packet.sessionTime.value,

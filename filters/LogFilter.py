@@ -162,14 +162,14 @@ class LogFilter(fil.Filter):
         self.numActiveCars: int = 0
 
     def filter(self, packet: pk.Packet):
-        packet = typing.cast(const.PACKET_TYPE[packet.packetId.value], packet)
         packet_id = packet.packetId.value
         if packet_id == 1:
-            self._filter_session(packet)
+            self._filter_session(typing.cast(pk.SessionPacket, packet))
         elif packet_id == 3:
-            self._filter_event(packet)
+            self._filter_event(typing.cast(pk.EventPacket, packet))
         elif packet_id == 4:
-            self._filter_participants(packet)
+            self._filter_participants(
+                typing.cast(pk.ParticipantsPacket, packet))
 
     def _get_driver_name(self, vehicle_index: int):
         participant = self.participants[vehicle_index]
@@ -234,7 +234,7 @@ class LogFilter(fil.Filter):
                 return
             other_vehicle = packet.otherVehicleIdx.value
             second_driver = (self._get_driver_name(other_vehicle)
-                                if other_vehicle != 255 else None)
+                             if other_vehicle != 255 else None)
             time = packet.time.value if packet.time.value != 255 else None
             p_string = create_penalty_string(
                 packet.penaltyType.value,
@@ -255,14 +255,13 @@ class LogFilter(fil.Filter):
                 'It\'s lights out and away we go!')
         elif event_code == 'DTSV':
             packet = typing.cast(pk.DriveThroughPenaltyServedPacket,
-                                    packet)
+                                 packet)
             driver_name = self._get_driver_name(packet.vehicleIdx.value)
             print_with_session_timestamp(
                 packet.sessionTime.value,
                 f'{driver_name} has served a drive through penalty.')
         elif event_code == 'SGSV':
-            packet = typing.cast(pk.StopGoPenaltyServedPacket,
-                                    packet)
+            packet = typing.cast(pk.StopGoPenaltyServedPacket, packet)
             driver_name = self._get_driver_name(packet.vehicleIdx.value)
             print_with_session_timestamp(
                 packet.sessionTime.value,

@@ -31,13 +31,13 @@ def parse_from_bytes(
         if issubclass(DataType, bt.BasicType):
             value = du.unpack(data, index.value, DataType)
             index.value += bt.BASIC_TYPE_FORMAT[DataType].size
-            return value  # type: ignore
+            return typing.cast(T, value)
         if issubclass(DataType, pk.EventPacket):
             return DataType(parse_from_bytes(data, index, field.type) for
                             field in dataclasses.fields(DataType))  # type: ignore
     if typing.get_origin(DataType) is tuple:
-        return tuple(parse_from_bytes(data, index, e) for
-                     e in typing.get_args(DataType))  # type: ignore
+        return typing.cast(T, tuple(parse_from_bytes(data, index, e) for
+                           e in typing.get_args(DataType)))
     if DataType in GameData:
         return DataType(*[parse_from_bytes(data, index, field.type) for
                         field in dataclasses.fields(DataType)])
@@ -46,11 +46,11 @@ def parse_from_bytes(
 
 
 def parse_packet(data: bytes) -> pk.Packet:
-    PacketType = const.PACKET_TYPE[pu.get_packet_id(data)]  # type: ignore
+    PacketType = const.PACKET_TYPE[pu.get_packet_id(data)]
     if PacketType is pk.EventPacket:
         event_code = du.to_string(parse_from_bytes(
             data, Ref(pk.PACKET_HEADER_LENGTH), pk.EventCode))
         PacketType = const.EVENT_DETAILS_TYPE[event_code]
     index = Ref[int](0)
     return PacketType(*[parse_from_bytes(data, index, field.type) for
-                      field in dataclasses.fields(PacketType)])  # type: ignore
+                      field in dataclasses.fields(PacketType)])

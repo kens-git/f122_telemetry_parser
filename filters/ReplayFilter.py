@@ -461,6 +461,9 @@ class ReplayFilter(fil.Filter):
             packet.gamePaused.value, DataStorePolicy.ON_CHANGE)
         set(session_data['numMarshalZones'], packet.sessionTime.value,
             packet.numMarshalZones.value, DataStorePolicy.FIRST)
+        session_data['marshalZones'].append((
+            packet.sessionTime.value,
+            [x.zoneFlag.value for x in packet.marshalZones]))
         set(session_data['safetyCarStatus'], packet.sessionTime.value,
             packet.safetyCarStatus.value, DataStorePolicy.ON_CHANGE)
         set(session_data['networkGame'], packet.sessionTime.value,

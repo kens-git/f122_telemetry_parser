@@ -17,21 +17,20 @@ class DataStorePolicy(enum.Enum):
 
 def set(data: List[Any], timestamp: float, value: Any, policy: DataStorePolicy):
     timestamp = float('%.3f' % (timestamp))
-    match policy:
-        case DataStorePolicy.ALL:
+    if policy == DataStorePolicy.ALL:
+        data.append((timestamp, value))
+    elif policy == DataStorePolicy.FIRST:
+        if not data:
             data.append((timestamp, value))
-        case DataStorePolicy.FIRST:
-            if not data:
+    elif policy == DataStorePolicy.ON_CHANGE:
+        if not data:
+            data.append((timestamp, value))
+        else:
+            previous = data[-1][1]
+            if previous != value:
                 data.append((timestamp, value))
-        case DataStorePolicy.ON_CHANGE:
-            if not data:
-                data.append((timestamp, value))
-            else:
-                previous = data[-1][1]
-                if previous != value:
-                    data.append((timestamp, value))
-        case _:
-            raise ValueError('No matching UpdatePolicy.')
+    else:
+        raise ValueError('No matching UpdatePolicy.')
 
 
 T = TypeVar('T')
@@ -60,36 +59,34 @@ class ReplayFilter(fil.Filter):
         self._reset()
 
     def filter(self, packet: pk.Packet):
-        match packet.packetId.value:
-            case const.PacketId.MOTION.value:
-                packet = cast(pk.MotionPacket, packet)
-                self._filter_motion(packet)
-            case const.PacketId.SESSION.value:
-                packet = cast(pk.SessionPacket, packet)
-                self._filter_session(packet)
-            case const.PacketId.LAP_DATA.value:
-                packet = cast(pk.LapDataPacket, packet)
-                self._filter_lap_data(packet)
-            case const.PacketId.EVENT.value:
-                packet = cast(pk.EventPacket, packet)
-                self._filter_event(packet)
-            case const.PacketId.PARTICIPANTS.value:
-                packet = cast(pk.ParticipantsPacket, packet)
-                self._filter_participants(packet)
-            case const.PacketId.CAR_SETUPS.value:
-                packet = cast(pk.CarSetupsPacket, packet)
-                self._filter_car_setups(packet)
-            case const.PacketId.CAR_TELEMETRY.value:
-                packet = cast(pk.CarTelemetryPacket, packet)
-                self._filter_car_telemetry(packet)
-            case const.PacketId.CAR_STATUS.value:
-                packet = cast(pk.CarStatusPacket, packet)
-                self._filter_car_status(packet)
-            case const.PacketId.CAR_DAMAGE.value:
-                packet = cast(pk.CarDamagePacket, packet)
-                self._filter_car_damage(packet)
-            case _:
-                pass
+        packet_id = packet.packetId.value
+        if packet_id == const.PacketId.MOTION.value:
+            packet = cast(pk.MotionPacket, packet)
+            self._filter_motion(packet)
+        elif packet_id == const.PacketId.SESSION.value:
+            packet = cast(pk.SessionPacket, packet)
+            self._filter_session(packet)
+        elif packet_id == const.PacketId.LAP_DATA.value:
+            packet = cast(pk.LapDataPacket, packet)
+            self._filter_lap_data(packet)
+        elif packet_id == const.PacketId.EVENT.value:
+            packet = cast(pk.EventPacket, packet)
+            self._filter_event(packet)
+        elif packet_id == const.PacketId.PARTICIPANTS.value:
+            packet = cast(pk.ParticipantsPacket, packet)
+            self._filter_participants(packet)
+        elif packet_id == const.PacketId.CAR_SETUPS.value:
+            packet = cast(pk.CarSetupsPacket, packet)
+            self._filter_car_setups(packet)
+        elif packet_id == const.PacketId.CAR_TELEMETRY.value:
+            packet = cast(pk.CarTelemetryPacket, packet)
+            self._filter_car_telemetry(packet)
+        elif packet_id == const.PacketId.CAR_STATUS.value:
+            packet = cast(pk.CarStatusPacket, packet)
+            self._filter_car_status(packet)
+        elif packet_id == const.PacketId.CAR_DAMAGE.value:
+            packet = cast(pk.CarDamagePacket, packet)
+            self._filter_car_damage(packet)
 
     def _filter_car_damage(self, packet: pk.CarDamagePacket):
         timestamp = packet.sessionTime.value
@@ -288,86 +285,83 @@ class ReplayFilter(fil.Filter):
         event_code = du.to_string(packet.eventStringCode)
         if event_code == const.EventStringCode.BUTTON.value:
             return
-        match event_code:
-            case const.EventStringCode.SESSION_START.value:
-                print('Session start detected.')
-                self.session_start_time = time.time()
-                self.data['event']['SSTA'] = (
-                    packet.sessionTime.value, event_code)
-            case const.EventStringCode.SESSION_END.value:
-                print('Session end detected.')
-                self.session_end_time = time.time()
-                self.data['event']['SEND'] = (
-                    packet.sessionTime.value, event_code)
-                self._save_data()
-            case const.EventStringCode.FASTEST_LAP.value:
-                packet = cast(pk.FastestLapPacket, packet)
-                self.data['event']['FTLP'].append((
-                    packet.sessionTime.value, event_code,
-                    packet.vehicleIdx.value, packet.lapTime.value))
-            case const.EventStringCode.RETIREMENT.value:
-                packet = cast(pk.RetirementPacket, packet)
-                self.data['event']['RTMT'].append((
-                    packet.sessionTime.value, event_code,
-                    packet.vehicleIdx.value))
-            case const.EventStringCode.DRS_ENABLED.value:
-                self.data['event']['DRSE'].append((
-                    packet.sessionTime.value, event_code))
-            case const.EventStringCode.DRS_DISABLED.value:
-                self.data['event']['DRSD'].append((
-                    packet.sessionTime.value, event_code))
-            case const.EventStringCode.CHEQUERED_FLAG.value:
-                self.data['event']['CHQF'] = (
-                    packet.sessionTime.value, event_code)
-            case const.EventStringCode.RACE_WINNER.value:
-                packet = cast(pk.RaceWinnerPacket, packet)
-                self.data['event']['RCWN'] = (
-                    packet.sessionTime.value, event_code,
-                    packet.vehicleIdx.value)
-            case const.EventStringCode.PENALTY.value:
-                packet = cast(pk.PenaltyPacket, packet)
-                self.data['event']['PENA'].append(
-                    (packet.sessionTime.value, event_code,
-                     packet.penaltyType.value,
-                     packet.infringementType.value,
-                     packet.vehicleIdx.value,
-                     packet.otherVehicleIdx.value,
-                     packet.time.value,
-                     packet.placesGained.value))
-            case const.EventStringCode.SPEED_TRAP.value:
-                packet = cast(pk.SpeedTrapPacket, packet)
-                if packet.isOverallFastestInSession.value == 1:
-                    self.data['event']['SPTP'].append((
-                        packet.sessionTime.value,
-                        event_code,
-                        packet.vehicleIdx.value,
-                        packet.speed.value))
-            case const.EventStringCode.START_LIGHTS.value:
-                packet = cast(pk.StartLightsPacket, packet)
-                self.data['event']['STLG'].append(
-                    (packet.sessionTime.value, event_code,
-                     packet.numLights.value))
-            case const.EventStringCode.LIGHTS_OUT.value:
-                self.data['event']['LGOT'] = (
-                    packet.sessionTime.value, event_code)
-            case const.EventStringCode.DRIVE_THROUGH_SERVED.value:
-                packet = cast(
-                    pk.DriveThroughPenaltyServedPacket, packet)
-                self.data['event']['DTSV'].append((
-                    packet.sessionTime.value, event_code,
-                    packet.vehicleIdx.value))
-            case const.EventStringCode.STOP_GO_SERVED.value:
-                packet = cast(pk.StopGoPenaltyServedPacket, packet)
-                self.data['event']['SGSV'].append((
-                    packet.sessionTime.value, event_code,
-                    packet.vehicleIdx.value))
-            case const.EventStringCode.FLASHBACK.value:
-                packet = cast(pk.FlashbackPacket, packet)
-                self.data['event']['FLBK'].append(
-                    (packet.sessionTime.value, event_code,
-                     packet.flashbackSessionTime.value))
-            case _:
-                pass
+        if event_code == const.EventStringCode.SESSION_START.value:
+            print('Session start detected.')
+            self.session_start_time = time.time()
+            self.data['event']['SSTA'] = (
+                packet.sessionTime.value, event_code)
+        elif event_code == const.EventStringCode.SESSION_END.value:
+            print('Session end detected.')
+            self.session_end_time = time.time()
+            self.data['event']['SEND'] = (
+                packet.sessionTime.value, event_code)
+            self._save_data()
+        elif event_code == const.EventStringCode.FASTEST_LAP.value:
+            packet = cast(pk.FastestLapPacket, packet)
+            self.data['event']['FTLP'].append((
+                packet.sessionTime.value, event_code,
+                packet.vehicleIdx.value, packet.lapTime.value))
+        elif event_code == const.EventStringCode.RETIREMENT.value:
+            packet = cast(pk.RetirementPacket, packet)
+            self.data['event']['RTMT'].append((
+                packet.sessionTime.value, event_code,
+                packet.vehicleIdx.value))
+        elif event_code == const.EventStringCode.DRS_ENABLED.value:
+            self.data['event']['DRSE'].append((
+                packet.sessionTime.value, event_code))
+        elif event_code == const.EventStringCode.DRS_DISABLED.value:
+            self.data['event']['DRSD'].append((
+                packet.sessionTime.value, event_code))
+        elif event_code == const.EventStringCode.CHEQUERED_FLAG.value:
+            self.data['event']['CHQF'] = (
+                packet.sessionTime.value, event_code)
+        elif event_code == const.EventStringCode.RACE_WINNER.value:
+            packet = cast(pk.RaceWinnerPacket, packet)
+            self.data['event']['RCWN'] = (
+                packet.sessionTime.value, event_code,
+                packet.vehicleIdx.value)
+        elif event_code == const.EventStringCode.PENALTY.value:
+            packet = cast(pk.PenaltyPacket, packet)
+            self.data['event']['PENA'].append(
+                (packet.sessionTime.value, event_code,
+                    packet.penaltyType.value,
+                    packet.infringementType.value,
+                    packet.vehicleIdx.value,
+                    packet.otherVehicleIdx.value,
+                    packet.time.value,
+                    packet.placesGained.value))
+        elif event_code == const.EventStringCode.SPEED_TRAP.value:
+            packet = cast(pk.SpeedTrapPacket, packet)
+            if packet.isOverallFastestInSession.value == 1:
+                self.data['event']['SPTP'].append((
+                    packet.sessionTime.value,
+                    event_code,
+                    packet.vehicleIdx.value,
+                    packet.speed.value))
+        elif event_code == const.EventStringCode.START_LIGHTS.value:
+            packet = cast(pk.StartLightsPacket, packet)
+            self.data['event']['STLG'].append(
+                (packet.sessionTime.value, event_code,
+                    packet.numLights.value))
+        elif event_code == const.EventStringCode.LIGHTS_OUT.value:
+            self.data['event']['LGOT'] = (
+                packet.sessionTime.value, event_code)
+        elif event_code == const.EventStringCode.DRIVE_THROUGH_SERVED.value:
+            packet = cast(
+                pk.DriveThroughPenaltyServedPacket, packet)
+            self.data['event']['DTSV'].append((
+                packet.sessionTime.value, event_code,
+                packet.vehicleIdx.value))
+        elif event_code == const.EventStringCode.STOP_GO_SERVED.value:
+            packet = cast(pk.StopGoPenaltyServedPacket, packet)
+            self.data['event']['SGSV'].append((
+                packet.sessionTime.value, event_code,
+                packet.vehicleIdx.value))
+        elif event_code == const.EventStringCode.FLASHBACK.value:
+            packet = cast(pk.FlashbackPacket, packet)
+            self.data['event']['FLBK'].append(
+                (packet.sessionTime.value, event_code,
+                    packet.flashbackSessionTime.value))
 
     def _filter_lap_data(self, packet: pk.LapDataPacket):
         timestamp = packet.sessionTime.value

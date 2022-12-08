@@ -1,4 +1,5 @@
 import argparse
+import logging
 import sys
 import time
 import typing
@@ -8,6 +9,11 @@ import filters.LogFilter as log_fil
 import filters.NullFilter as null_fil
 import filters.ReplayFilter as replay_fil
 import parsers.UDPParser as udp
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] %(message)s',
+    datefmt='%H:%M:%S')
 
 DEFAULT_PORT: typing.Final[int] = 20777
 
@@ -47,7 +53,7 @@ if __name__ == '__main__':
     try:
         filter: fil.Filter = FILTERS[args['filter']][1]()
     except KeyError:
-        print(f'Unexpected filter given: {args["filter"]}')
+        logging.info(f'Unexpected filter given: {args["filter"]}')
         sys.exit(1)
     parser = udp.UDPParser(filter, port)
     try:

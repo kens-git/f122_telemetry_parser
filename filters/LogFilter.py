@@ -1,8 +1,8 @@
 import datetime
+import logging
 import typing
 import constants.constants as const
 from constants.constants import PenaltyId
-import custom_types.basic as bt
 import filters.Filter as fil
 import packets.packet_data as pd
 import packets.packets as pk
@@ -111,7 +111,7 @@ IGNORED_PENALTY_IDS = (
 def print_with_session_timestamp(timestamp: float, string: str):
     time_string = (str(datetime.timedelta(seconds=timestamp))[:-3] if
                    timestamp != 0 else '0:00:00.000')
-    print(f'[{time_string}] {string}')
+    logging.info(f'[{time_string}] {string}')
 
 
 def create_time_of_day_string(timestamp: int) -> str:
@@ -180,12 +180,12 @@ class LogFilter(fil.Filter):
         if self.session_displayed is True:
             return
         self.session_displayed = True
-        print(f'\t{const.TRACK_NAMES[packet.trackId.value]}')
-        print(f'\t{const.SESSION_TEXT[packet.sessionType.value]}')
-        print(f'\t{create_time_of_day_string(packet.timeOfDay.value)}')
-        print(f'\t{const.WEATHER_TEXT[packet.weather.value]}')
-        print(f'\tAir: {packet.airTemperature.value}°')
-        print(f'\tTrack: {packet.trackTemperature.value}°')
+        logging.info(f'\t{const.TRACK_NAMES[packet.trackId.value]}')
+        logging.info(f'\t{const.SESSION_TEXT[packet.sessionType.value]}')
+        logging.info(f'\t{create_time_of_day_string(packet.timeOfDay.value)}')
+        logging.info(f'\t{const.WEATHER_TEXT[packet.weather.value]}')
+        logging.info(f'\tAir: {packet.airTemperature.value}°')
+        logging.info(f'\tTrack: {packet.trackTemperature.value}°')
 
     def _filter_event(self, packet: pk.EventPacket):
         event_code = du.to_string(packet.eventStringCode)

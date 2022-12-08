@@ -1,3 +1,4 @@
+import logging
 import queue
 import socket
 import threading
@@ -37,11 +38,9 @@ class UDPParser:
 
     def _producer(self):
         self.socket.bind(('127.0.0.1', self.port))
-        print('')
-        print('UDPParser started successfully.')
-        print(f'Using filter: {type(self.filter).__name__}')
-        print(f'Listening on port {self.port}.')
-        print('')
+        logging.info('UDPParser started successfully.')
+        logging.info(f'Using filter: {type(self.filter).__name__}')
+        logging.info(f'Listening on port {self.port}.\n')
         while self.socket:
             data = self.socket.recvfrom(2**16)[0]
             self.data_queue.put(data)

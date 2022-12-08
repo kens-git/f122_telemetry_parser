@@ -1,9 +1,10 @@
 import dataclasses
 import enum
 import json
+import logging
 import pathlib
 import time
-from typing import Any, cast, Dict, List, TypeVar
+from typing import Any, cast, Dict, List
 import constants.constants as const
 import filters.Filter as fil
 import packets.packets as pk
@@ -291,12 +292,12 @@ class ReplayFilter(fil.Filter):
         if event_code == const.EventStringCode.BUTTON.value:
             return
         if event_code == const.EventStringCode.SESSION_START.value:
-            print('Session start detected.')
+            logging.info('Session start detected.')
             self.session_start_time = time.time()
             self.data['event']['SSTA'] = (
                 packet.sessionTime.value, event_code)
         elif event_code == const.EventStringCode.SESSION_END.value:
-            print('Session end detected.')
+            logging.info('Session end detected.')
             self.session_end_time = time.time()
             self.data['event']['SEND'] = (
                 packet.sessionTime.value, event_code)
@@ -713,10 +714,10 @@ class ReplayFilter(fil.Filter):
         }
 
     def _save_data(self):
-        print('Session filtering complete.')
-        print(f'Session filter time: \
+        logging.info('Session filtering complete.')
+        logging.debug(f'Session filter time: \
 {self.session_end_time - self.session_start_time}')
-        print('Writing data to file...')
+        logging.info('Writing data to file...')
         self.file_start_write_time = time.time()
         track_name = const.TRACK_NAMES[
             self.data['session']['trackId'][0][1]].replace(' ', '_')[0:12]
@@ -731,11 +732,10 @@ class ReplayFilter(fil.Filter):
         with filepath.open(mode='w', encoding='utf-8') as f:
             json.dump(self.data, f, ensure_ascii=False,
                       separators=(',', ':'))
-        print(f'Finished writing file: {filename}')
+        logging.info(f'Finished writing file: {filename}\n')
         self.file_end_write_time = time.time()
-        print(f'File write time: \
+        logging.debug(f'File write time: \
 {self.file_end_write_time - self.file_start_write_time}')
-        print(f'Total time: \
+        logging.debug(f'Total time: \
 {self.file_end_write_time - self.session_start_time}')
-        print('')
         self._reset()

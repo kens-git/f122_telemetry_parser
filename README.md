@@ -6,7 +6,7 @@
 
 
 <h1>Installation</h1>
-<p>The application doesn't require any third party packages: a recent (3.10+) installation of Python is all that is required. For complete beginners, the code can be downloaded from this page as a zip file (click on the green 'Code' button, then select 'Download ZIP').</p>
+<p>The application doesn't require any third party packages: a recent (3.9+) installation of Python is all that is required. For complete beginners, the code can be downloaded from this page as a zip file (click on the green 'Code' button, then select 'Download ZIP').</p>
 <p>To actually receive telemetry data a copy of F1 22 for PC with telemetry output turned on is also required.</p>
 
 <h1>Examples</h1>
@@ -42,11 +42,11 @@ python ./main.py -f debug -p 25000
 <ol>
     <li>Subclassing the filters.Filter class.</li>
     <li>Implementing the filter method on the new subclass. The cleanup method is meant to give the filter a chance
-    to clean up or commit any work it has done (e.g., if it's working with files), but this method can be ignored if it's not applicable.</li>
+    to clean up or commit any work it has done before the application closes as the result of a key interrupt (e.g., if it's working with files), but this method can be ignored if it's not applicable.</li>
     <li>Adding the new filter in the FILTERS dictionary in main.py. This makes it available for selection from the command line. Note: currently, filters are expected to take no parameters in their constructors.</li>
     <li>Run the application, selecting your new filter.</li>
 </ol>
 
 <p>The LogFilter serves as an example for how a filter may be implemented.</p>
 
-<p>Note: filters may lag when the telemetry rate is high, but the queue should ensure all data is eventually filtered. If a real-time filter is required, either turn down the rate to 10-20 Hz, or comment in the issue thread that there's an interest in seeing this lag fixed sooner rather than later.</p>
+<p>Note: filters may lag when the telemetry rate is high, but the queue should ensure all data is eventually filtered. If a real-time filter is required, invoking main.py using PyPy appears to be the most straightforward solution.</p>

@@ -13,6 +13,8 @@ class BasicType(abc.ABC):
 
 class Char(BasicType):
     def __init__(self, value: str):
+        if ord(value) < -128 or ord(value) > 127:
+            raise ValueError(f'Char value out of range: {ord(value)}')
         super().__init__(value)
 
     def __eq__(self, rhs: object) -> bool:
@@ -23,6 +25,8 @@ class Char(BasicType):
 
 class Double(BasicType):
     def __init__(self, value: float):
+        if value < 1.7e-308 or value > 1.7e+308:
+            raise ValueError(f'Double value out of range: {value}')
         super().__init__(value)
 
     def __eq__(self, rhs: object) -> bool:
@@ -33,6 +37,8 @@ class Double(BasicType):
 
 class Float(BasicType):
     def __init__(self, value: float):
+        if value < 1.23-38 or value > 3.4e+38:
+            raise ValueError(f'Float value out of range: {value}')
         super().__init__(value)
 
     def __eq__(self, rhs: object) -> bool:
@@ -44,7 +50,7 @@ class Float(BasicType):
 class Int8(BasicType):
     def __init__(self, value: int):
         if value < -128 or value > 127:
-            raise ValueError('blah')
+            raise ValueError(f'Int8 value out of range: {value}')
         super().__init__(value)
 
     def __eq__(self, rhs: object) -> bool:
@@ -55,6 +61,8 @@ class Int8(BasicType):
 
 class UInt8(BasicType):
     def __init__(self, value: int):
+        if value < 0 or value > 255:
+            raise ValueError(f'UInt8 value out of range: {value}')
         super().__init__(value)
 
     def __eq__(self, rhs: object) -> bool:
@@ -65,6 +73,8 @@ class UInt8(BasicType):
 
 class Int16(BasicType):
     def __init__(self, value: int):
+        if value < -32768 or value > 32767:
+            raise ValueError(f'Int16 value out of range: {value}')
         super().__init__(value)
 
     def __eq__(self, rhs: object) -> bool:
@@ -75,6 +85,8 @@ class Int16(BasicType):
 
 class UInt16(BasicType):
     def __init__(self, value: int):
+        if value < 0 or value > 65535:
+            raise ValueError(f'UInt16 value out of range: {value}')
         super().__init__(value)
 
     def __eq__(self, rhs: object) -> bool:
@@ -85,6 +97,8 @@ class UInt16(BasicType):
 
 class Int32(BasicType):
     def __init__(self, value: int):
+        if value < -2147483648 or value > 2147483647:
+            raise ValueError(f'Int32 value out of range: {value}')
         super().__init__(value)
 
     def __eq__(self, rhs: object) -> bool:
@@ -95,6 +109,8 @@ class Int32(BasicType):
 
 class UInt32(BasicType):
     def __init__(self, value: int):
+        if value < 0 or value > 4294967295:
+            raise ValueError(f'UInt32 value out of range: {value}')
         super().__init__(value)
 
     def __eq__(self, rhs: object) -> bool:
@@ -105,6 +121,8 @@ class UInt32(BasicType):
 
 class Int64(BasicType):
     def __init__(self, value: int):
+        if value < -9223372036854775808 or value > 9223372036854775807:
+            raise ValueError(f'Int64 value out of range: {value}')
         super().__init__(value)
 
     def __eq__(self, rhs: object) -> bool:
@@ -115,6 +133,8 @@ class Int64(BasicType):
 
 class UInt64(BasicType):
     def __init__(self, value: int):
+        if value < 0 or value > 18446744073709551615:
+            raise ValueError(f'UInt64 value out of range: {value}')
         super().__init__(value)
 
     def __eq__(self, rhs: object) -> bool:

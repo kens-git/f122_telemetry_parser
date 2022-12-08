@@ -1,6 +1,7 @@
 import dataclasses
 import enum
 import json
+import pathlib
 import time
 from typing import Any, cast, Dict, List, TypeVar
 import constants.constants as const
@@ -15,7 +16,9 @@ class DataStorePolicy(enum.Enum):
     ON_CHANGE = 2,
 
 
-def set(data: List[Any], timestamp: float, value: Any, policy: DataStorePolicy):
+def set(data: List[Any], timestamp: float, value: Any,
+        policy: DataStorePolicy):
+    # Storing timestamps with ms precision cuts down the file size by ~50%.
     timestamp = float('%.3f' % (timestamp))
     if policy == DataStorePolicy.ALL:
         data.append((timestamp, value))
@@ -31,9 +34,6 @@ def set(data: List[Any], timestamp: float, value: Any, policy: DataStorePolicy):
                 data.append((timestamp, value))
     else:
         raise ValueError('No matching UpdatePolicy.')
-
-
-T = TypeVar('T')
 
 
 @dataclasses.dataclass
@@ -244,11 +244,16 @@ class ReplayFilter(fil.Filter):
             telem_data = self.data['car_telemetry'][index]
             set(telem_data['speed'], timestamp, data.speed.value,
                 DataStorePolicy.ON_CHANGE)
-            set(telem_data['throttle'], timestamp, data.throttle.value,
+            # Storing this telemetry and motion data (below) with 3 decimal
+            # precision shrinks the data file by ~30%.
+            set(telem_data['throttle'], timestamp,
+                float('%.3f' % (data.throttle.value)),
                 DataStorePolicy.ON_CHANGE)
-            set(telem_data['steer'], timestamp, data.steer.value,
+            set(telem_data['steer'], timestamp,
+                float('%.3f' % (data.steer.value)),
                 DataStorePolicy.ON_CHANGE)
-            set(telem_data['brake'], timestamp, data.brake.value,
+            set(telem_data['brake'], timestamp,
+                float('%.3f' % (data.brake.value)),
                 DataStorePolicy.ON_CHANGE)
             set(telem_data['clutch'], timestamp, data.clutch.value,
                 DataStorePolicy.ON_CHANGE)
@@ -415,11 +420,14 @@ class ReplayFilter(fil.Filter):
         for index, data in enumerate(packet.carMotionData):
             data_list = self.data['motion'][index]
             set(data_list['worldPositionX'], packet.sessionTime.value,
-                data.worldPositionX.value, DataStorePolicy.ON_CHANGE)
+                float('%.3f' % (data.worldPositionX.value)),
+                DataStorePolicy.ON_CHANGE)
             set(data_list['worldPositionY'], packet.sessionTime.value,
-                data.worldPositionY.value, DataStorePolicy.ON_CHANGE)
+                float('%.3f' % (data.worldPositionY.value)),
+                DataStorePolicy.ON_CHANGE)
             set(data_list['yaw'], packet.sessionTime.value,
-                data.yaw.value, DataStorePolicy.ON_CHANGE)
+                float('%.3f' % (data.yaw.value)),
+                DataStorePolicy.ON_CHANGE)
 
     def _filter_participants(self, packet: pk.ParticipantsPacket):
         p_data = self.data['participants']
@@ -439,6 +447,8 @@ class ReplayFilter(fil.Filter):
 
     def _filter_session(self, packet: pk.SessionPacket):
         session_data = self.data['session']
+        set(session_data['sessionUID'], packet.sessionTime.value,
+            packet.sessionUID.value, DataStorePolicy.FIRST)
         set(session_data['weather'], packet.sessionTime.value,
             packet.weather.value, DataStorePolicy.ON_CHANGE)
         set(session_data['trackTemperature'], packet.sessionTime.value,
@@ -518,6 +528,7 @@ class ReplayFilter(fil.Filter):
                     'yaw': []
                 } for _ in range(22)],
             'session': {
+                'sessionUID': [],
                 'weather': [],
                 'trackTemperature': [],
                 'airTemperature': [],
@@ -707,10 +718,20 @@ class ReplayFilter(fil.Filter):
 {self.session_end_time - self.session_start_time}')
         print('Writing data to file...')
         self.file_start_write_time = time.time()
-        with open('data.json', 'w', encoding='utf-8') as f:
+        track_name = const.TRACK_NAMES[
+            self.data['session']['trackId'][0][1]].replace(' ', '_')[0:12]
+        session_type = const.SESSION_TEXT[
+            self.data['session']['sessionType'][0][1]][0:12].replace(
+                ' ', '_').replace('-', '_')
+        session_uid = str(self.data['session']['sessionUID'][0][1])[-8:]
+        filename = f'{track_name}_{session_type}_{session_uid}.json'
+        filepath = pathlib.Path('saved_data')
+        filepath.mkdir(exist_ok=True)
+        filepath = filepath / filename
+        with filepath.open(mode='w', encoding='utf-8') as f:
             json.dump(self.data, f, ensure_ascii=False,
                       separators=(',', ':'))
-        print('Finished writing file: <filename_todo>')
+        print(f'Finished writing file: {filename}')
         self.file_end_write_time = time.time()
         print(f'File write time: \
 {self.file_end_write_time - self.file_start_write_time}')

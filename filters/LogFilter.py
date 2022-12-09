@@ -3,6 +3,7 @@ import logging
 import typing
 import constants.constants as const
 from constants.constants import PenaltyId
+import constants.constants as const
 import filters.Filter as fil
 import packets.packet_data as pd
 import packets.packets as pk
@@ -163,11 +164,11 @@ class LogFilter(fil.Filter):
 
     def filter(self, packet: pk.Packet):
         packet_id = packet.packetId.value
-        if packet_id == 1:
+        if packet_id == const.PacketId.SESSION.value:
             self._filter_session(typing.cast(pk.SessionPacket, packet))
-        elif packet_id == 3:
+        elif packet_id == const.PacketId.EVENT.value:
             self._filter_event(typing.cast(pk.EventPacket, packet))
-        elif packet_id == 4:
+        elif packet_id == const.PacketId.PARTICIPANTS.value:
             self._filter_participants(
                 typing.cast(pk.ParticipantsPacket, packet))
 
@@ -189,52 +190,52 @@ class LogFilter(fil.Filter):
 
     def _filter_event(self, packet: pk.EventPacket):
         event_code = du.to_string(packet.eventStringCode)
-        if event_code == 'SSTA':
+        if event_code == const.EventStringCode.SESSION_START.value:
             print_with_session_timestamp(
                 packet.sessionTime.value, 'Session started.')
-        elif event_code == 'SEND':
+        elif event_code == const.EventStringCode.SESSION_END.value:
             print_with_session_timestamp(
                 packet.sessionTime.value, 'Session ended.')
             self._reset()
-        elif event_code == 'FTLP':
+        elif event_code == const.EventStringCode.FASTEST_LAP.value:
             packet = typing.cast(pk.FastestLapPacket, packet)
             driver_name = self._get_driver_name(packet.vehicleIdx.value)
             print_with_session_timestamp(
                 packet.sessionTime.value,
                 f'{driver_name} has set the fastest lap time of \
 {str(datetime.timedelta(seconds=packet.lapTime.value))[3:-3]}.')
-        elif event_code == 'RTMT':
+        elif event_code == const.EventStringCode.RETIREMENT.value:
             packet = typing.cast(pk.RetirementPacket, packet)
             driver_name = self._get_driver_name(packet.vehicleIdx.value)
             print_with_session_timestamp(
                 packet.sessionTime.value,
                 f'{driver_name} has retired from the session.')
-        elif event_code == 'DRSE':
+        elif event_code == const.EventStringCode.DRS_ENABLED.value:
             print_with_session_timestamp(
                 packet.sessionTime.value, 'DRS has been enabled.')
-        elif event_code == 'DRSD':
+        elif event_code == const.EventStringCode.DRS_DISABLED.value:
             print_with_session_timestamp(
                 packet.sessionTime.value, 'DRS has been disabled.')
-        elif event_code == 'TMPT':
+        elif event_code == const.EventStringCode.TEAM_MATE_IN_PITS.value:
             print_with_session_timestamp(
                 packet.sessionTime.value, 'Your teammate is in the pits.')
-        elif event_code == 'CHQF':
+        elif event_code == const.EventStringCode.CHEQUERED_FLAG.value:
             print_with_session_timestamp(
                 packet.sessionTime.value,
                 'The chequered flag has been waved.')
-        elif event_code == 'RCWN':
+        elif event_code == const.EventStringCode.RACE_WINNER.value:
             packet = typing.cast(pk.RaceWinnerPacket, packet)
             driver_name = self._get_driver_name(packet.vehicleIdx.value)
             print_with_session_timestamp(
                 packet.sessionTime.value,
                 f'{driver_name} has been declared the winner.')
-        elif event_code == 'PENA':
+        elif event_code == const.EventStringCode.PENALTY.value:
             packet = typing.cast(pk.PenaltyPacket, packet)
             if packet.penaltyType.value in IGNORED_PENALTY_IDS:
                 return
             other_vehicle = packet.otherVehicleIdx.value
             second_driver = (self._get_driver_name(other_vehicle)
-                             if other_vehicle != 255 else None)
+                             if other_vehicle != const.NULL_DRIVER else None)
             time = packet.time.value if packet.time.value != 255 else None
             p_string = create_penalty_string(
                 packet.penaltyType.value,
@@ -243,30 +244,30 @@ class LogFilter(fil.Filter):
                 second_driver=second_driver, time=time)
             print_with_session_timestamp(
                 packet.sessionTime.value, p_string)
-        elif event_code == 'SPTP':
+        elif event_code == const.EventStringCode.SPEED_TRAP.value:
             pass
-        elif event_code == 'STLG':
+        elif event_code == const.EventStringCode.START_LIGHTS.value:
             packet = typing.cast(pk.StartLightsPacket, packet)
             print_with_session_timestamp(
                 packet.sessionTime.value, '*' * packet.numLights.value)
-        elif event_code == 'LGOT':
+        elif event_code == const.EventStringCode.LIGHTS_OUT.value:
             print_with_session_timestamp(
                 packet.sessionTime.value,
                 'It\'s lights out and away we go!')
-        elif event_code == 'DTSV':
+        elif event_code == const.EventStringCode.DRIVE_THROUGH_SERVED.value:
             packet = typing.cast(pk.DriveThroughPenaltyServedPacket,
                                  packet)
             driver_name = self._get_driver_name(packet.vehicleIdx.value)
             print_with_session_timestamp(
                 packet.sessionTime.value,
                 f'{driver_name} has served a drive through penalty.')
-        elif event_code == 'SGSV':
+        elif event_code == const.EventStringCode.STOP_GO_SERVED.value:
             packet = typing.cast(pk.StopGoPenaltyServedPacket, packet)
             driver_name = self._get_driver_name(packet.vehicleIdx.value)
             print_with_session_timestamp(
                 packet.sessionTime.value,
                 f'{driver_name} has served a stop-and-go penalty.')
-        elif event_code == 'FLBK':
+        elif event_code == const.EventStringCode.FLASHBACK.value:
             print_with_session_timestamp(
                 packet.sessionTime.value, 'Flashback initiated.')
 

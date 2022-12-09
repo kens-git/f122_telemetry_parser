@@ -5,10 +5,6 @@ import custom_types.basic as bt
 import packets.packet_data as pd
 
 
-# TODO: type other Finals
-PACKET_HEADER_LENGTH: typing.Final[int] = 24
-PACKET_HEADER_ID_INDEX: typing.Final[int] = 5
-
 T = typing.TypeVar('T')
 GridData = typing.Tuple[
     T, T, T, T, T, T, T, T, T, T,

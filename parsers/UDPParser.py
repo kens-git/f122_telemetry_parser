@@ -6,6 +6,9 @@ import typing
 import filters.Filter as fil
 import utilities.parse as parse
 
+# in bytes
+UDP_MAX_SIZE: typing.Final[int] = 65507
+
 
 class UDPParser:
     def __init__(self, filter: fil.Filter, port: int):
@@ -37,10 +40,11 @@ class UDPParser:
             self.filter.filter(parse.parse_packet(self.data_queue.get()))
 
     def _producer(self):
+        # TODO: accept host in constructor
         self.socket.bind(('127.0.0.1', self.port))
         logging.info('UDPParser started successfully.')
         logging.info(f'Using filter: {type(self.filter).__name__}')
         logging.info(f'Listening on port {self.port}.\n')
         while self.socket:
-            data = self.socket.recvfrom(2**16)[0]
+            data = self.socket.recvfrom(UDP_MAX_SIZE)[0]
             self.data_queue.put(data)

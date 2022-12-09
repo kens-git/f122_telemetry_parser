@@ -10,12 +10,14 @@ import filters.NullFilter as null_fil
 import filters.ReplayFilter as replay_fil
 import parsers.UDPParser as udp
 
+DEFAULT_PORT: typing.Final[int] = 20777
+
+MAIN_THREAD_SLEEP_TIME_MS: typing.Final[float] = 0.016
+
 logging.basicConfig(
     level=logging.INFO,
     format='[%(asctime)s] %(message)s',
     datefmt='%H:%M:%S')
-
-DEFAULT_PORT: typing.Final[int] = 20777
 
 FILTERS: typing.Dict[str, typing.Tuple[str, typing.Type[fil.Filter]]] = {
     'debug': ('Logs packet ids to the console for debugging.',
@@ -59,7 +61,7 @@ if __name__ == '__main__':
     try:
         parser.start()
         while parser.is_running():
-            time.sleep(0.016)
+            time.sleep(MAIN_THREAD_SLEEP_TIME_MS)
     except KeyboardInterrupt:
         parser.stop()
         filter.cleanup()

@@ -20,6 +20,7 @@ GameData: typing.Set[typing.Any] = {
 }
 
 
+# TODO: move
 class Ref(typing.Generic[T]):
     def __init__(self, value: T):
         self.value: T = value
@@ -49,7 +50,7 @@ def parse_packet(data: bytes) -> pk.Packet:
     PacketType = const.PACKET_TYPE[pu.get_packet_id(data)]
     if PacketType is pk.EventPacket:
         event_code = du.to_string(parse_from_bytes(
-            data, Ref(pk.PACKET_HEADER_LENGTH), pk.EventCode))
+            data, Ref(const.PACKET_HEADER_LENGTH), pk.EventCode))
         PacketType = const.EVENT_DETAILS_TYPE[event_code]
     index = Ref[int](0)
     return PacketType(*[parse_from_bytes(data, index, field.type) for

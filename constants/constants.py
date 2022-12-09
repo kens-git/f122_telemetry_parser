@@ -1,6 +1,15 @@
 import enum
-import typing
+from typing import Dict, Final, Type
 import packets.packets as pk
+
+
+PACKET_HEADER_LENGTH: Final[int] = 24
+
+PACKET_HEADER_ID_INDEX: Final[int] = 5
+
+GRID_COUNT: Final[int] = 22
+
+NULL_DRIVER: Final[int] = 255
 
 
 class EventStringCode(enum.Enum):
@@ -23,8 +32,7 @@ class EventStringCode(enum.Enum):
     BUTTON = 'BUTN'
 
 
-EVENT_DETAILS_TYPE: typing.Final[
-        typing.Dict[str, typing.Type[pk.EventPacket]]] = {
+EVENT_DETAILS_TYPE: Final[Dict[str, Type[pk.EventPacket]]] = {
     EventStringCode.SESSION_START.value: pk.EventPacket,
     EventStringCode.SESSION_END.value: pk.EventPacket,
     EventStringCode.FASTEST_LAP.value: pk.FastestLapPacket,
@@ -61,8 +69,7 @@ class PacketId(enum.Enum):
     SESSION_HISTORY = 11
 
 
-PACKET_TYPE: typing.Final[
-        typing.Dict[int, typing.Type[pk.Packet]]] = {
+PACKET_TYPE: Final[Dict[int, Type[pk.Packet]]] = {
     PacketId.MOTION.value: pk.MotionPacket,
     PacketId.SESSION.value: pk.SessionPacket,
     PacketId.LAP_DATA.value: pk.LapDataPacket,
@@ -239,7 +246,7 @@ class DriverId(enum.Enum):
     JACQUES_VILLENEUVE = 126
 
 
-DRIVER_NAMES: typing.Dict[int, str] = {
+DRIVER_NAMES: Dict[int, str] = {
     DriverId.CARLOS_SAINZ.value: 'Carlos Sainz',
     DriverId.DANIIL_KVYAT.value: 'Daniil Kvyat',
     DriverId.DANIEL_RICCIARDO.value: 'Daniel Ricciardo',
@@ -390,7 +397,7 @@ class TrackId(enum.Enum):
     MIAMI = 30
 
 
-TRACK_NAMES: typing.Dict[int, str] = {
+TRACK_NAMES: Dict[int, str] = {
     TrackId.MELBOURNE.value: 'Albert Park Circuit',
     TrackId.PAUL_RICARD.value: 'Circuit Paul Ricard',
     TrackId.SHANGHAI.value: 'Shanghai International Circuit',
@@ -690,7 +697,7 @@ class SessionId(enum.Enum):
     TIME_TRIAL = 13
 
 
-SESSION_TEXT: typing.Dict[int, str] = {
+SESSION_TEXT: Dict[int, str] = {
     SessionId.UNKNOWN.value: 'Unknown',
     SessionId.P1.value: 'Practice 1',
     SessionId.P2.value: 'Practice 2',
@@ -717,7 +724,7 @@ class WeatherId(enum.Enum):
     STORM = 5
 
 
-WEATHER_TEXT: typing.Dict[int, str] = {
+WEATHER_TEXT: Dict[int, str] = {
     WeatherId.CLEAR.value: 'Clear',
     WeatherId.LIGHT_CLOUD.value: 'Light Cloud',
     WeatherId.OVERCAST.value: 'Overcast',

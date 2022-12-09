@@ -294,41 +294,41 @@ class ReplayFilter(fil.Filter):
         if event_code == const.EventStringCode.SESSION_START.value:
             logging.info('Session start detected.')
             self.session_start_time = time.time()
-            self.data['event']['SSTA'] = (
+            self.data['event'][event_code] = (
                 packet.sessionTime.value, event_code)
         elif event_code == const.EventStringCode.SESSION_END.value:
             logging.info('Session end detected.')
             self.session_end_time = time.time()
-            self.data['event']['SEND'] = (
+            self.data['event'][event_code] = (
                 packet.sessionTime.value, event_code)
             self._save_data()
         elif event_code == const.EventStringCode.FASTEST_LAP.value:
             packet = cast(pk.FastestLapPacket, packet)
-            self.data['event']['FTLP'].append((
+            self.data['event'][event_code].append((
                 packet.sessionTime.value, event_code,
                 packet.vehicleIdx.value, packet.lapTime.value))
         elif event_code == const.EventStringCode.RETIREMENT.value:
             packet = cast(pk.RetirementPacket, packet)
-            self.data['event']['RTMT'].append((
+            self.data['event'][event_code].append((
                 packet.sessionTime.value, event_code,
                 packet.vehicleIdx.value))
         elif event_code == const.EventStringCode.DRS_ENABLED.value:
-            self.data['event']['DRSE'].append((
+            self.data['event'][event_code].append((
                 packet.sessionTime.value, event_code))
         elif event_code == const.EventStringCode.DRS_DISABLED.value:
-            self.data['event']['DRSD'].append((
+            self.data['event'][event_code].append((
                 packet.sessionTime.value, event_code))
         elif event_code == const.EventStringCode.CHEQUERED_FLAG.value:
-            self.data['event']['CHQF'] = (
+            self.data['event'][event_code] = (
                 packet.sessionTime.value, event_code)
         elif event_code == const.EventStringCode.RACE_WINNER.value:
             packet = cast(pk.RaceWinnerPacket, packet)
-            self.data['event']['RCWN'] = (
+            self.data['event'][event_code] = (
                 packet.sessionTime.value, event_code,
                 packet.vehicleIdx.value)
         elif event_code == const.EventStringCode.PENALTY.value:
             packet = cast(pk.PenaltyPacket, packet)
-            self.data['event']['PENA'].append(
+            self.data['event'][event_code].append(
                 (packet.sessionTime.value, event_code,
                     packet.penaltyType.value,
                     packet.infringementType.value,
@@ -339,33 +339,33 @@ class ReplayFilter(fil.Filter):
         elif event_code == const.EventStringCode.SPEED_TRAP.value:
             packet = cast(pk.SpeedTrapPacket, packet)
             if packet.isOverallFastestInSession.value == 1:
-                self.data['event']['SPTP'].append((
+                self.data['event'][event_code].append((
                     packet.sessionTime.value,
                     event_code,
                     packet.vehicleIdx.value,
                     packet.speed.value))
         elif event_code == const.EventStringCode.START_LIGHTS.value:
             packet = cast(pk.StartLightsPacket, packet)
-            self.data['event']['STLG'].append(
+            self.data['event'][event_code].append(
                 (packet.sessionTime.value, event_code,
                     packet.numLights.value))
         elif event_code == const.EventStringCode.LIGHTS_OUT.value:
-            self.data['event']['LGOT'] = (
+            self.data['event'][event_code] = (
                 packet.sessionTime.value, event_code)
         elif event_code == const.EventStringCode.DRIVE_THROUGH_SERVED.value:
             packet = cast(
                 pk.DriveThroughPenaltyServedPacket, packet)
-            self.data['event']['DTSV'].append((
+            self.data['event'][event_code].append((
                 packet.sessionTime.value, event_code,
                 packet.vehicleIdx.value))
         elif event_code == const.EventStringCode.STOP_GO_SERVED.value:
             packet = cast(pk.StopGoPenaltyServedPacket, packet)
-            self.data['event']['SGSV'].append((
+            self.data['event'][event_code].append((
                 packet.sessionTime.value, event_code,
                 packet.vehicleIdx.value))
         elif event_code == const.EventStringCode.FLASHBACK.value:
             packet = cast(pk.FlashbackPacket, packet)
-            self.data['event']['FLBK'].append(
+            self.data['event'][event_code].append(
                 (packet.sessionTime.value, event_code,
                     packet.flashbackSessionTime.value))
 
@@ -527,7 +527,7 @@ class ReplayFilter(fil.Filter):
                     'worldPositionX': [],
                     'worldPositionY': [],
                     'yaw': []
-                } for _ in range(22)],
+                } for _ in range(const.GRID_COUNT)],
             'session': {
                 'sessionUID': [],
                 'weather': [],
@@ -585,7 +585,7 @@ class ReplayFilter(fil.Filter):
                     'pitLaneTimeInLaneInMS': [],
                     'pitStopTimerInMS': [],
                     'pitStopShouldServePen': [],
-                } for _ in range(22)],
+                } for _ in range(const.GRID_COUNT)],
             'event': {
                 const.EventStringCode.SESSION_START.value: None,
                 const.EventStringCode.SESSION_END.value: None,
@@ -615,7 +615,7 @@ class ReplayFilter(fil.Filter):
                             'nationality': None,
                             'name': None,
                             'yourTelemetry': None,
-                        } for _ in range(22)]
+                        } for _ in range(const.GRID_COUNT)]
                 },
             'car_setups':
                 [{
@@ -641,7 +641,7 @@ class ReplayFilter(fil.Filter):
                     'frontRightTyrePressure': [],
                     'ballast': [],
                     'fuelLoad': [],
-                } for _ in range(22)],
+                } for _ in range(const.GRID_COUNT)],
             'car_telemetry':
                 [{
                     'speed': [],
@@ -660,7 +660,7 @@ class ReplayFilter(fil.Filter):
                     'engineTemperature': [],
                     'tiresPressure': [],
                     'surfaceType': [],
-                } for _ in range(22)],
+                } for _ in range(const.GRID_COUNT)],
             'car_status':
                 [{
                     'tractionControl': [],
@@ -686,7 +686,7 @@ class ReplayFilter(fil.Filter):
                     'ersHarvestedThisLapMGUH': [],
                     'ersDeployedThisLap': [],
                     'networkPaused': [],
-                } for _ in range(22)],
+                } for _ in range(const.GRID_COUNT)],
             'car_damage':
                 [{
                     'tyresWear': [],
@@ -710,7 +710,7 @@ class ReplayFilter(fil.Filter):
                     'engineTCWear': [],
                     'engineBlown': [],
                     'engineSeized': [],
-                } for _ in range(22)],
+                } for _ in range(const.GRID_COUNT)],
         }
 
     def _save_data(self):

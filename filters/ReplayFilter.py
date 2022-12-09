@@ -302,8 +302,8 @@ class ReplayFilter(Filter):
             return
         if event_code == EventStringCode.SESSION_START.value:
             # TODO: this needs to reset if multiple session starts are detected:
-            #       It's possible to open the pause menu while waiting on the grid
-            #       and after closing the menu a session start event is sent.
+            #       It's possible to open the pause menu while waiting on the grid,
+            #       then after closing the menu a session start event is sent.
             #       If the user then quits the race no end event is sent, causing
             #       the filter to wait for an end event that isn't coming.
             logging.info('Session start detected.')

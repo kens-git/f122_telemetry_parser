@@ -1,26 +1,50 @@
 from abc import ABC
 from dataclasses import dataclass
-from typing import Any, Final
-
+from typing import Any, Dict, Final, Type
 
 FLOAT_MIN: Final[float] = -340282346638528859811704183484516925440
+"""The minimum value a Float can represent."""
+
 FLOAT_MAX: Final[float] = 340282346638528859811704183484516925440
+"""The maximum value a Float can represent."""
+
 DOUBLE_MIN: Final[float] = -179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368  # noqa
+"""The minimum value a Double can represent."""
+
 DOUBLE_MAX: Final[float] = 179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368  # noqa
+"""The maximum value a Double can represent."""
 
 
 class BasicType(ABC):
+    """Defines an immutable type analogous to C/C++ fundamental types.
+
+    Provides the semantics of fixed-size types.
+
+    Attributes:
+        value: The current value of the BasicType instance.
+    """
+
     def __init__(self, value: Any):
-        self.value = value
+        """
+        Args:
+            value: The value of the BasicType instance.
+        """
+        self.value: Final[Any] = value
 
     def __str__(self):
+        """Returns the human-readable string representation of the value."""
         return self.value.__str__()
 
 
 class Char(BasicType):
+    """Defines a 1 byte char type.
+
+    Chars are implementation specific, but the values in the packets
+    appear to be unsigned and so this implementation assumes the
+    ordinal values are between 0 and 255.
+    """
+
     def __init__(self, value: str):
-        # Note: chars are implementation specific, but these appear to be
-        #       unsigned.
         if ord(value) < 0 or ord(value) > 255:
             raise ValueError(
                 f'Char value out of range: {ord(value)} ({value})')
@@ -33,6 +57,8 @@ class Char(BasicType):
 
 
 class Double(BasicType):
+    """Defines an 8 byte double type."""
+
     def __init__(self, value: float):
         if value < DOUBLE_MIN or value > DOUBLE_MAX:
             raise ValueError(f'Double value out of range: {value}')
@@ -45,6 +71,8 @@ class Double(BasicType):
 
 
 class Float(BasicType):
+    """Defines a 4 byte float type."""
+
     def __init__(self, value: float):
         if value < FLOAT_MIN or value > FLOAT_MAX:
             raise ValueError(f'Float value out of range: {value}')
@@ -57,6 +85,8 @@ class Float(BasicType):
 
 
 class Int8(BasicType):
+    """Defines a 1 byte int type."""
+
     def __init__(self, value: int):
         if value < -128 or value > 127:
             raise ValueError(f'Int8 value out of range: {value}')
@@ -69,6 +99,8 @@ class Int8(BasicType):
 
 
 class UInt8(BasicType):
+    """Defines a 1 byte unsigned int type."""
+
     def __init__(self, value: int):
         if value < 0 or value > 255:
             raise ValueError(f'UInt8 value out of range: {value}')
@@ -81,6 +113,7 @@ class UInt8(BasicType):
 
 
 class Int16(BasicType):
+    """Defines a 2 byte int type."""
     def __init__(self, value: int):
         if value < -32768 or value > 32767:
             raise ValueError(f'Int16 value out of range: {value}')
@@ -93,6 +126,7 @@ class Int16(BasicType):
 
 
 class UInt16(BasicType):
+    """Defines a 2 byte unsigned int type."""
     def __init__(self, value: int):
         if value < 0 or value > 65535:
             raise ValueError(f'UInt16 value out of range: {value}')
@@ -105,6 +139,8 @@ class UInt16(BasicType):
 
 
 class Int32(BasicType):
+    """Defines a 4 byte int type."""
+
     def __init__(self, value: int):
         if value < -2147483648 or value > 2147483647:
             raise ValueError(f'Int32 value out of range: {value}')
@@ -117,6 +153,7 @@ class Int32(BasicType):
 
 
 class UInt32(BasicType):
+    """Defines a 4 byte unsigned int type."""
     def __init__(self, value: int):
         if value < 0 or value > 4294967295:
             raise ValueError(f'UInt32 value out of range: {value}')
@@ -129,6 +166,7 @@ class UInt32(BasicType):
 
 
 class Int64(BasicType):
+    """Defines an 8 byte int type."""
     def __init__(self, value: int):
         if value < -9223372036854775808 or value > 9223372036854775807:
             raise ValueError(f'Int64 value out of range: {value}')
@@ -141,6 +179,8 @@ class Int64(BasicType):
 
 
 class UInt64(BasicType):
+    """Defines an 8 byte unsigned int type."""
+
     def __init__(self, value: int):
         if value < 0 or value > 18446744073709551615:
             raise ValueError(f'UInt64 value out of range: {value}')
@@ -154,11 +194,17 @@ class UInt64(BasicType):
 
 @dataclass
 class DataFormat:
+    """Stores a BasicType's format character and byte size.
+
+    The format character is used when unpacking (converting) bytes/bytestrings
+    to a another type and identifies what type is encoded in the bytes.
+    """
+
     format: str
     size: int
 
 
-BASIC_TYPE_FORMAT = {
+BASIC_TYPE_FORMAT: Final[Dict[Type[BasicType], DataFormat]] = {
     BasicType: DataFormat('', 0),
     Char: DataFormat('c', 1),
     Double: DataFormat('d', 8),
@@ -172,3 +218,4 @@ BASIC_TYPE_FORMAT = {
     Int64: DataFormat('q', 8),
     UInt64: DataFormat('Q', 8),
 }
+"""Associates a BasicType with its DataFormat."""

@@ -18,13 +18,31 @@ import utilities.data as du
 
 
 class DataStorePolicy(Enum):
+    """Defines the policy used to determine when to store data."""
+
     ALL = 0,
+    """Store all data."""
+
     FIRST = 1,
+    """Store the first instance of the data but ignore everything else."""
+
     ON_CHANGE = 2,
+    """Store instances of data that are different from the data
+    immediately before it.
+    """
 
 
 def set(data: List[Any], timestamp: float, value: Any,
         policy: DataStorePolicy):
+    """Adds timestamped data to a list according to the given policy.
+
+    Args:
+        data: The list of data to add to.
+        timestamp: The timestamp of the data.
+        value: The value to consider for addition to the data.
+        policy: The data storing policy.
+    """
+
     # Storing timestamps with ms precision cuts down the file size by ~50%.
     timestamp = float('%.3f' % (timestamp))
     if policy == DataStorePolicy.ALL:
@@ -43,19 +61,15 @@ def set(data: List[Any], timestamp: float, value: Any,
         raise ValueError('No matching UpdatePolicy.')
 
 
-@dataclass
-class DataPoint():
-    timestamp: float
-    value: Any
-
-
-@dataclass
-class DataField:
-    field: str
-    policy: DataStorePolicy
-
-
 class ReplayFilter(Filter):
+    """Defines a Filter that stores session data for an external program.
+
+    This class is due for a major refactor and the implementation details of
+    it should not be relied on.
+
+    TODO: document somewhere the format this class outputs.
+    """
+
     def __init__(self):
         self.version = 1
         self.session_start_time: float = 0

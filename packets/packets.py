@@ -10,6 +10,10 @@ from packets.packet_data import (
     LobbyInfoData, MarshalZone, MotionData, ParticipantsData,
     TyreStintHistoryData, WeatherForecastSample)
 
+"""This module contains classes that correspond with the packets
+output by the game.
+"""
+
 
 @dataclass
 class Packet(ABC):
@@ -337,3 +341,4 @@ EVENT_DETAILS_TYPE: Final[Dict[str, Type[EventPacket]]] = {
     EventStringCode.FLASHBACK.value: FlashbackPacket,
     EventStringCode.BUTTON.value: ButtonsPacket,
 }
+"""Returns the packet type associated with a event string code."""

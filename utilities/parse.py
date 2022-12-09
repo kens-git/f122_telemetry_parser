@@ -23,10 +23,22 @@ GameData: Set[Any] = {
     MotionData, ParticipantsData, LapHistoryData,
     TyreStintHistoryData, MarshalZone, WeatherForecastSample,
 }
+"""The set of data types contained in the packets."""
 
 
 def parse_from_bytes(
         data: bytes, index: Ref[int], DataType: Type[T]) -> T:
+    """Returns a type constructed from a subsequence of bytes.
+
+    Args:
+        data: The bytes containing the unparsed data.
+        index: The index to begin parsing from.
+        DataType: The type to parse the data as.
+
+    Returns:
+        An instance of the DataType.
+    """
+
     if isclass(DataType):
         if issubclass(DataType, BasicType):
             value = du.unpack(data, index.value, DataType)
@@ -46,6 +58,15 @@ def parse_from_bytes(
 
 
 def parse_packet(data: bytes) -> Packet:
+    """Parses a Packet from the given bytes.
+
+    Args:
+        data: The bytes to parse the packet from.
+
+    Returns:
+        An instance of a Packet subclass, determined by the packet's id.
+    """
+
     PacketType = PACKET_TYPE[get_packet_id(data)]
     if PacketType is EventPacket:
         event_code = du.to_string(parse_from_bytes(

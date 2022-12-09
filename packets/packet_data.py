@@ -3,6 +3,10 @@ from custom_types.basic import (
     Double, Float, Int8, Int16, UInt8, UInt16, UInt32)
 from custom_types.game import CarCornerData, Name, TyreStintData
 
+"""This module contains dataclasses for data types contained in
+the packets.
+"""
+
 
 @dataclass
 class CarDamageData:

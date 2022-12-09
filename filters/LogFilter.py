@@ -35,6 +35,7 @@ PENALTY_STRINGS: Dict[int, str] = {
     16: 'retired',
     17: 'black flag timer',
 }
+"""Associates human-readable strings with penalty ids."""
 
 INFRINGEMENT_STRINGS: Dict[int, str] = {
     0: 'blocking by slow driving',
@@ -93,11 +94,13 @@ INFRINGEMENT_STRINGS: Dict[int, str] = {
     53: 'a mandatory pitstop',
     54: 'attribute assigned',
 }
+"""Associates human-readable strings with infringement ids."""
 
 
 GENERIC_PENALTY_IDS = (
     PenaltyId.DRIVE_THROUGH.value, PenaltyId.STOP_GO.value,
     PenaltyId.GRID_PENALTY.value, PenaltyId.TYRE_REGULATIONS.value)
+"""Generic penalties that affect a single driver."""
 
 LAP_INVALIDATION_PENALTY_IDS = (
     PenaltyId.THIS_LAP_INVALIDATED.value,
@@ -106,27 +109,55 @@ LAP_INVALIDATION_PENALTY_IDS = (
     PenaltyId.LAP_INVALIDATED_WITHOUT_REASON.value,
     PenaltyId.THIS_AND_PREVIOUS_LAP_INVALIDATED.value,
     PenaltyId.THIS_AND_PREVIOUS_LAP_INVALIDATED_WITHOUT_REASON.value)
+"""Penalties that result in lap invalidation."""
 
 IGNORED_PENALTY_IDS = (
     PenaltyId.PENALTY_REMINDER.value,
     PenaltyId.PARKED_TOO_LONG_TIMER.value,
     PenaltyId.RETIRED.value,
     PenaltyId.BLACK_FLAG_TIMER.value)
+"""Penalties that are ignored by the LogFilter."""
 
 
 def print_with_session_timestamp(timestamp: float, string: str):
+    """Logs a string to the console with a session timestamp.
+
+    Args:
+        timestamp: The session timestamp.
+        string: The string to log.
+    """
+
     time_string = (str(datetime.timedelta(seconds=timestamp))[:-3] if
                    timestamp != 0 else '0:00:00.000')
     logging.info(f'[{time_string}] {string}')
 
 
 def create_time_of_day_string(timestamp: int) -> str:
+    """Creates a string for a time of day from a session timestamp.
+
+    Args:
+        timestamp: The session timestamp.
+
+    Returns:
+        A string displaying the time of day (e.g., 15:00:00)
+    """
+
     return str(datetime.timedelta(minutes=timestamp))
 
 
 def create_penalty_string(
         penalty_id: int, infringement_id: int, offender: str,
         second_driver: Optional[str] = None, time: Optional[int] = None):
+    """Creates a human-friendly string of information about a penalty.
+
+    Args:
+        penalty_id: The id of the penalty.
+        infringement_id: The id of the infringement.
+        offender: The name of the offending driver.
+        second_driver: Th name of the second driver involved in the
+            incident.
+        time: The penalty time in seconds given to the offender.
+    """
     penalty = PENALTY_STRINGS[penalty_id]
     infringement = INFRINGEMENT_STRINGS[infringement_id]
     if penalty_id in GENERIC_PENALTY_IDS:
@@ -150,7 +181,17 @@ def create_penalty_string(
     raise ValueError('Unhandled penalty id in create_penalty_string')
 
 
-def get_driver_name(driver_id: int, fallback_name: str):
+def get_driver_name(driver_id: int, fallback_name: str) -> str:
+    """Returns a driver's name, or a fallback if it's not available.
+
+    Args:
+        driver_id: The id of the driver.
+        fallback_name: Name to return if the queried name isn't available.
+
+    Returns:
+        The available driver name.
+    """
+
     try:
         return DRIVER_NAMES[driver_id]
     except KeyError:
@@ -159,6 +200,8 @@ def get_driver_name(driver_id: int, fallback_name: str):
 
 
 class LogFilter(Filter):
+    """Defines a Filter that logs info about a session to the console."""
+
     def __init__(self):
         self.data = {}
         self.session_displayed = False

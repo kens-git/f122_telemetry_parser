@@ -3,15 +3,21 @@ from typing import Dict, Final
 
 
 PACKET_HEADER_LENGTH: Final[int] = 24
+"""The length of the packet header, in bytes."""
 
 PACKET_HEADER_ID_INDEX: Final[int] = 5
+"""The byte index of the packet id."""
 
 GRID_COUNT: Final[int] = 22
+"""The number of grid positions."""
 
 NULL_DRIVER: Final[int] = 255
+"""Id for a driver with no associated data in a packet."""
 
 
 class EventStringCode(Enum):
+    """String codes used to identify an event."""
+
     SESSION_START = 'SSTA'
     SESSION_END = 'SEND'
     FASTEST_LAP = 'FTLP'
@@ -32,6 +38,8 @@ class EventStringCode(Enum):
 
 
 class PacketId(Enum):
+    """Integer ids of the packets."""
+
     MOTION = 0
     SESSION = 1
     LAP_DATA = 2
@@ -47,6 +55,8 @@ class PacketId(Enum):
 
 
 class TeamId(Enum):
+    """Integer ids for each team."""
+
     MERCEDES = 0
     FERRARI = 1
     RED_BULL_RACING = 2
@@ -92,6 +102,8 @@ class TeamId(Enum):
 
 
 class DriverId(Enum):
+    """Integer ids for real-life drivers."""
+
     CARLOS_SAINZ = 0
     DANIIL_KVYAT = 1
     DANIEL_RICCIARDO = 2
@@ -322,9 +334,12 @@ DRIVER_NAMES: Dict[int, str] = {
     DriverId.MARK_WEBBER.value: 'Mark Webber',
     DriverId.JACQUES_VILLENEUVE.value: 'Jacques Villeneuve',
 }
+"""Associates a driver id with their full name."""
 
 
 class TrackId(Enum):
+    """Integer ids for in-game tracks."""
+
     MELBOURNE = 0
     PAUL_RICARD = 1
     SHANGHAI = 2
@@ -391,9 +406,12 @@ TRACK_NAMES: Dict[int, str] = {
     TrackId.JEDDAH.value: 'Jeddah Corniche Circuit',
     TrackId.MIAMI.value: 'Miami International Autodrome',
 }
+"""Associates a track id with that track's full name."""
 
 
 class NationalityId(Enum):
+    """Integer id for nationalities."""
+
     AMERICAN = 1
     ARGENTINEAN = 2
     AUSTRALIAN = 3
@@ -484,6 +502,8 @@ class NationalityId(Enum):
 
 
 class GameModeId(Enum):
+    """Integer ids for game modes."""
+
     EVENT_MODE = 0
     GRAND_PRIX = 3
     TIME_TRIAL = 5
@@ -501,6 +521,8 @@ class GameModeId(Enum):
 
 
 class RulesetId(Enum):
+    """Integer ids for each ruleset."""
+
     PRACTICE_AND_QUALIFYING = 0
     RACE = 1
     TIME_TRIAL = 2
@@ -513,6 +535,8 @@ class RulesetId(Enum):
 
 
 class Surface(Enum):
+    """Integer ids for surface types on and around the track."""
+
     TARMAC = 0
     RUMBLE_STRIP = 1
     CONCRETE = 2
@@ -528,6 +552,8 @@ class Surface(Enum):
 
 
 class ButtonFlag(Enum):
+    """Bit flags associated with a button on the controller."""
+
     CROSS_OR_A = 0x00000001
     TRIANGLE_OR_Y = 0x00000002
     CIRCLE_OR_B = 0x00000004
@@ -563,6 +589,8 @@ class ButtonFlag(Enum):
 
 
 class PenaltyId(Enum):
+    """Integer ids for penalties."""
+
     DRIVE_THROUGH = 0
     STOP_GO = 1
     GRID_PENALTY = 2
@@ -584,6 +612,8 @@ class PenaltyId(Enum):
 
 
 class InfringementId(Enum):
+    """Integer ids for infringements."""
+
     BLOCKING_BY_SLOW_DRIVING = 0
     BLOCKING_BY_WRONG_WAY_DRIVING = 1
     REVERSING_OFF_THE_START_LINE = 2
@@ -642,6 +672,8 @@ class InfringementId(Enum):
 
 
 class SessionId(Enum):
+    """Integer ids for session types."""
+
     UNKNOWN = 0
     P1 = 1
     P2 = 2
@@ -674,9 +706,12 @@ SESSION_TEXT: Dict[int, str] = {
     SessionId.R3.value: 'Race 3',
     SessionId.TIME_TRIAL.value: 'Time Trial',
 }
+"""Associates a session id with its display text."""
 
 
 class WeatherId(Enum):
+    """Integer ids for weather."""
+
     CLEAR = 0
     LIGHT_CLOUD = 1
     OVERCAST = 2
@@ -693,3 +728,4 @@ WEATHER_TEXT: Dict[int, str] = {
     WeatherId.HEAVY_RAIN.value: 'Heavy Rain',
     WeatherId.STORM.value: 'Storm',
 }
+"""Associates a weather id with its display text."""

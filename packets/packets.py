@@ -1,306 +1,339 @@
-import abc
-import dataclasses
-import typing
-import custom_types.basic as bt
-import packets.packet_data as pd
+from abc import ABC
+from dataclasses import dataclass
+from typing import Dict, Final, Tuple, Type
+from constants.constants import EventStringCode, PacketId
+from custom_types.basic import Float, Int8, UInt8, UInt16, UInt32, UInt64
+from custom_types.game import CarCornerData, EventCode, GridData
+from packets.packet_data import (
+    CarDamageData, CarSetupsData, CarStatusData,
+    CarTelemetryData, FinalClassificationData, LapDataData, LapHistoryData,
+    LobbyInfoData, MarshalZone, MotionData, ParticipantsData,
+    TyreStintHistoryData, WeatherForecastSample)
 
 
-T = typing.TypeVar('T')
-GridData = typing.Tuple[
-    T, T, T, T, T, T, T, T, T, T,
-    T, T, T, T, T, T, T, T, T, T,
-    T, T,
-]
+@dataclass
+class Packet(ABC):
+    packetFormat: UInt16
+    gameMajorVersion: UInt8
+    gameMinorVersion: UInt8
+    packetVersion: UInt8
+    packetId: UInt8
+    sessionUID: UInt64
+    sessionTime: Float
+    frameIdentifier: UInt32
+    playerCarIndex: UInt8
+    secondaryPlayerCarIndex: UInt8
 
 
-EventCode = typing.Tuple[bt.Char, bt.Char, bt.Char, bt.Char]
-
-
-@dataclasses.dataclass
-class Packet(abc.ABC):
-    packetFormat: bt.UInt16
-    gameMajorVersion: bt.UInt8
-    gameMinorVersion: bt.UInt8
-    packetVersion: bt.UInt8
-    packetId: bt.UInt8
-    sessionUID: bt.UInt64
-    sessionTime: bt.Float
-    frameIdentifier: bt.UInt32
-    playerCarIndex: bt.UInt8
-    secondaryPlayerCarIndex: bt.UInt8
-
-
-@dataclasses.dataclass
+@dataclass
 class CarDamagePacket(Packet):
-    carDamageData: GridData[pd.CarDamageData]
+    carDamageData: GridData[CarDamageData]
 
 
-@dataclasses.dataclass
+@dataclass
 class CarSetupsPacket(Packet):
-    carSetups: GridData[pd.CarSetupsData]
+    carSetups: GridData[CarSetupsData]
 
 
-@dataclasses.dataclass
+@dataclass
 class CarStatusPacket(Packet):
-    carStatusData: GridData[pd.CarStatusData]
+    carStatusData: GridData[CarStatusData]
 
 
-@dataclasses.dataclass
+@dataclass
 class CarTelemetryPacket(Packet):
-    carTelemetryData: GridData[pd.CarTelemetryData]
-    mfdPanelIndex: bt.UInt8
-    mfdPanelIndexSecondaryPlayer: bt.UInt8
-    suggestedGear: bt.Int8
+    carTelemetryData: GridData[CarTelemetryData]
+    mfdPanelIndex: UInt8
+    mfdPanelIndexSecondaryPlayer: UInt8
+    suggestedGear: Int8
 
 
-@dataclasses.dataclass
+@dataclass
 class EventPacket(Packet):
     eventStringCode: EventCode
 
 
-@dataclasses.dataclass
+@dataclass
 class FastestLapPacket(EventPacket):
-    vehicleIdx: bt.UInt8
-    lapTime: bt.Float
+    vehicleIdx: UInt8
+    lapTime: Float
 
 
-@dataclasses.dataclass
+@dataclass
 class RetirementPacket(EventPacket):
-    vehicleIdx: bt.UInt8
+    vehicleIdx: UInt8
 
 
-@dataclasses.dataclass
+@dataclass
 class TeamMateInPitsPacket(EventPacket):
-    vehicleIdx: bt.UInt8
+    vehicleIdx: UInt8
 
 
-@dataclasses.dataclass
+@dataclass
 class RaceWinnerPacket(EventPacket):
-    vehicleIdx: bt.UInt8
+    vehicleIdx: UInt8
 
 
-@dataclasses.dataclass
+@dataclass
 class PenaltyPacket(EventPacket):
-    penaltyType: bt.UInt8
-    infringementType: bt.UInt8
-    vehicleIdx: bt.UInt8
-    otherVehicleIdx: bt.UInt8
-    time: bt.UInt8
-    lapNum: bt.UInt8
-    placesGained: bt.UInt8
+    penaltyType: UInt8
+    infringementType: UInt8
+    vehicleIdx: UInt8
+    otherVehicleIdx: UInt8
+    time: UInt8
+    lapNum: UInt8
+    placesGained: UInt8
 
 
-@dataclasses.dataclass
+@dataclass
 class SpeedTrapPacket(EventPacket):
-    vehicleIdx: bt.UInt8
-    speed: bt.Float
-    isOverallFastestInSession: bt.UInt8
-    isDriverFastestInSession: bt.UInt8
-    fastestVehicleIdxInSession: bt.UInt8
-    fastestSpeedInSession: bt.Float
+    vehicleIdx: UInt8
+    speed: Float
+    isOverallFastestInSession: UInt8
+    isDriverFastestInSession: UInt8
+    fastestVehicleIdxInSession: UInt8
+    fastestSpeedInSession: Float
 
 
-@dataclasses.dataclass
+@dataclass
 class StartLightsPacket(EventPacket):
-    numLights: bt.UInt8
+    numLights: UInt8
 
 
-@dataclasses.dataclass
+@dataclass
 class DriveThroughPenaltyServedPacket(EventPacket):
-    vehicleIdx: bt.UInt8
+    vehicleIdx: UInt8
 
 
-@dataclasses.dataclass
+@dataclass
 class StopGoPenaltyServedPacket(EventPacket):
-    vehicleIdx: bt.UInt8
+    vehicleIdx: UInt8
 
 
-@dataclasses.dataclass
+@dataclass
 class FlashbackPacket(EventPacket):
-    flashbackFrameIdentifier: bt.UInt32
-    flashbackSessionTime: bt.Float
+    flashbackFrameIdentifier: UInt32
+    flashbackSessionTime: Float
 
 
-@dataclasses.dataclass
+@dataclass
 class ButtonsPacket(EventPacket):
-    buttonStatus: bt.UInt32
+    buttonStatus: UInt32
 
 
-@dataclasses.dataclass
+@dataclass
 class FinalClassificationPacket(Packet):
-    numCars: bt.UInt8
-    classificationData: GridData[pd.FinalClassificationData]
+    numCars: UInt8
+    classificationData: GridData[FinalClassificationData]
 
 
-@dataclasses.dataclass
+@dataclass
 class LapDataPacket(Packet):
-    lapData: GridData[pd.LapDataData]
-    timeTrialPBCarIdx: bt.UInt8
-    timeTrialRivalCarIdx: bt.UInt8
+    lapData: GridData[LapDataData]
+    timeTrialPBCarIdx: UInt8
+    timeTrialRivalCarIdx: UInt8
 
 
-@dataclasses.dataclass
+@dataclass
 class LobbyInfoPacket(Packet):
-    numPlayers: bt.UInt8
-    lobbyPlayers: GridData[pd.LobbyInfoData]
+    numPlayers: UInt8
+    lobbyPlayers: GridData[LobbyInfoData]
 
 
-@dataclasses.dataclass
+@dataclass
 class MotionPacket(Packet):
-    carMotionData: GridData[pd.MotionData]
-    suspensionPosition: pd.CarCornerData[bt.Float]
-    suspensionVelocity: pd.CarCornerData[bt.Float]
-    suspensionAcceleration: pd.CarCornerData[bt.Float]
-    wheelSpeed: pd.CarCornerData[bt.Float]
-    wheelSlip: pd.CarCornerData[bt.Float]
-    localVelocityX: bt.Float
-    localVelocityY: bt.Float
-    localVelocityZ: bt.Float
-    angularVelocityX: bt.Float
-    angularVelocityY: bt.Float
-    angularVelocityZ: bt.Float
-    angularAccelerationX: bt.Float
-    angularAccelerationY: bt.Float
-    angularAccelerationZ: bt.Float
-    frontWheelsAngle: bt.Float
+    carMotionData: GridData[MotionData]
+    suspensionPosition: CarCornerData[Float]
+    suspensionVelocity: CarCornerData[Float]
+    suspensionAcceleration: CarCornerData[Float]
+    wheelSpeed: CarCornerData[Float]
+    wheelSlip: CarCornerData[Float]
+    localVelocityX: Float
+    localVelocityY: Float
+    localVelocityZ: Float
+    angularVelocityX: Float
+    angularVelocityY: Float
+    angularVelocityZ: Float
+    angularAccelerationX: Float
+    angularAccelerationY: Float
+    angularAccelerationZ: Float
+    frontWheelsAngle: Float
 
 
-@dataclasses.dataclass
+@dataclass
 class ParticipantsPacket(Packet):
-    numActiveCars: bt.UInt8
-    participants: GridData[pd.ParticipantsData]
+    numActiveCars: UInt8
+    participants: GridData[ParticipantsData]
 
 
-@dataclasses.dataclass
+@dataclass
 class SessionHistoryPacket(Packet):
-    carIdx: bt.UInt8
-    numLaps: bt.UInt8
-    numTyreStints: bt.UInt8
-    bestLapTimeLapNum: bt.UInt8
-    bestSector1LapNum: bt.UInt8
-    bestSector2LapNum: bt.UInt8
-    bestSector3LapNum: bt.UInt8
-    lapHistoryData: typing.Tuple[
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData, pd.LapHistoryData, pd.LapHistoryData,
-        pd.LapHistoryData,
+    carIdx: UInt8
+    numLaps: UInt8
+    numTyreStints: UInt8
+    bestLapTimeLapNum: UInt8
+    bestSector1LapNum: UInt8
+    bestSector2LapNum: UInt8
+    bestSector3LapNum: UInt8
+    lapHistoryData: Tuple[
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData, LapHistoryData, LapHistoryData,
+        LapHistoryData,
     ]
-    tyreStintHistoryData: typing.Tuple[
-        pd.TyreStintHistoryData, pd.TyreStintHistoryData,
-        pd.TyreStintHistoryData, pd.TyreStintHistoryData,
-        pd.TyreStintHistoryData, pd.TyreStintHistoryData,
-        pd.TyreStintHistoryData, pd.TyreStintHistoryData,
+    tyreStintHistoryData: Tuple[
+        TyreStintHistoryData, TyreStintHistoryData,
+        TyreStintHistoryData, TyreStintHistoryData,
+        TyreStintHistoryData, TyreStintHistoryData,
+        TyreStintHistoryData, TyreStintHistoryData,
     ]
 
 
-@dataclasses.dataclass
+@dataclass
 class SessionPacket(Packet):
-    weather: bt.UInt8
-    trackTemperature: bt.Int8
-    airTemperature: bt.Int8
-    totalLaps: bt.UInt8
-    trackLength: bt.UInt16
-    sessionType: bt.UInt8
-    trackId: bt.Int8
-    formula: bt.UInt8
-    sessionTimeLeft: bt.UInt16
-    sessionDuration: bt.UInt16
-    pitSpeedLimit: bt.UInt8
-    gamePaused: bt.UInt8
-    isSpectating: bt.UInt8
-    spectatorCarIndex: bt.UInt8
-    sliProNativeSupport: bt.UInt8
-    numMarshalZones: bt.UInt8
-    marshalZones: typing.Tuple[
-        pd.MarshalZone, pd.MarshalZone, pd.MarshalZone, pd.MarshalZone,
-        pd.MarshalZone, pd.MarshalZone, pd.MarshalZone, pd.MarshalZone,
-        pd.MarshalZone, pd.MarshalZone, pd.MarshalZone, pd.MarshalZone,
-        pd.MarshalZone, pd.MarshalZone, pd.MarshalZone, pd.MarshalZone,
-        pd.MarshalZone, pd.MarshalZone, pd.MarshalZone, pd.MarshalZone,
-        pd.MarshalZone,
+    weather: UInt8
+    trackTemperature: Int8
+    airTemperature: Int8
+    totalLaps: UInt8
+    trackLength: UInt16
+    sessionType: UInt8
+    trackId: Int8
+    formula: UInt8
+    sessionTimeLeft: UInt16
+    sessionDuration: UInt16
+    pitSpeedLimit: UInt8
+    gamePaused: UInt8
+    isSpectating: UInt8
+    spectatorCarIndex: UInt8
+    sliProNativeSupport: UInt8
+    numMarshalZones: UInt8
+    marshalZones: Tuple[
+        MarshalZone, MarshalZone, MarshalZone, MarshalZone,
+        MarshalZone, MarshalZone, MarshalZone, MarshalZone,
+        MarshalZone, MarshalZone, MarshalZone, MarshalZone,
+        MarshalZone, MarshalZone, MarshalZone, MarshalZone,
+        MarshalZone, MarshalZone, MarshalZone, MarshalZone,
+        MarshalZone,
     ]
-    safetyCarStatus: bt.UInt8
-    networkGame: bt.UInt8
-    numWeatherForecastSamples: bt.UInt8
-    weatherForecastSamples: typing.Tuple[
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
-        pd.WeatherForecastSample, pd.WeatherForecastSample,
+    safetyCarStatus: UInt8
+    networkGame: UInt8
+    numWeatherForecastSamples: UInt8
+    weatherForecastSamples: Tuple[
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
+        WeatherForecastSample, WeatherForecastSample,
     ]
-    forecastAccuracy: bt.UInt8
-    aiDifficulty: bt.UInt8
-    seasonLinkIdentifier: bt.UInt32
-    weekendLinkIdentifier: bt.UInt32
-    sessionLinkIdentifier: bt.UInt32
-    pitStopWindowIdealLap: bt.UInt8
-    pitStopWindowLatestLap: bt.UInt8
-    pitStopRejoinPosition: bt.UInt8
-    steeringAssist: bt.UInt8
-    brakingAssist: bt.UInt8
-    gearboxAssist: bt.UInt8
-    pitAssist: bt.UInt8
-    pitReleaseAssist: bt.UInt8
-    ERSAssist: bt.UInt8
-    DRSAssist: bt.UInt8
-    dynamicRacingLine: bt.UInt8
-    dynamicRacingLineType: bt.UInt8
-    gameMode: bt.UInt8
-    ruleSet: bt.UInt8
-    timeOfDay: bt.UInt32
-    sessionLength: bt.UInt8
+    forecastAccuracy: UInt8
+    aiDifficulty: UInt8
+    seasonLinkIdentifier: UInt32
+    weekendLinkIdentifier: UInt32
+    sessionLinkIdentifier: UInt32
+    pitStopWindowIdealLap: UInt8
+    pitStopWindowLatestLap: UInt8
+    pitStopRejoinPosition: UInt8
+    steeringAssist: UInt8
+    brakingAssist: UInt8
+    gearboxAssist: UInt8
+    pitAssist: UInt8
+    pitReleaseAssist: UInt8
+    ERSAssist: UInt8
+    DRSAssist: UInt8
+    dynamicRacingLine: UInt8
+    dynamicRacingLineType: UInt8
+    gameMode: UInt8
+    ruleSet: UInt8
+    timeOfDay: UInt32
+    sessionLength: UInt8
+
+
+PACKET_TYPE: Final[Dict[int, Type[Packet]]] = {
+    PacketId.MOTION.value: MotionPacket,
+    PacketId.SESSION.value: SessionPacket,
+    PacketId.LAP_DATA.value: LapDataPacket,
+    PacketId.EVENT.value: EventPacket,
+    PacketId.PARTICIPANTS.value: ParticipantsPacket,
+    PacketId.CAR_SETUPS.value: CarSetupsPacket,
+    PacketId.CAR_TELEMETRY.value: CarTelemetryPacket,
+    PacketId.CAR_STATUS.value: CarStatusPacket,
+    PacketId.FINAL_CLASSIFICATION.value: FinalClassificationPacket,
+    PacketId.LOBBY_INFO.value: LobbyInfoPacket,
+    PacketId.CAR_DAMAGE.value: CarDamagePacket,
+    PacketId.SESSION_HISTORY.value: SessionHistoryPacket,
+}
+
+
+EVENT_DETAILS_TYPE: Final[Dict[str, Type[EventPacket]]] = {
+    EventStringCode.SESSION_START.value: EventPacket,
+    EventStringCode.SESSION_END.value: EventPacket,
+    EventStringCode.FASTEST_LAP.value: FastestLapPacket,
+    EventStringCode.RETIREMENT.value: RetirementPacket,
+    EventStringCode.DRS_ENABLED.value: EventPacket,
+    EventStringCode.DRS_DISABLED.value: EventPacket,
+    EventStringCode.TEAM_MATE_IN_PITS.value: TeamMateInPitsPacket,
+    EventStringCode.CHEQUERED_FLAG.value: EventPacket,
+    EventStringCode.RACE_WINNER.value: RaceWinnerPacket,
+    EventStringCode.PENALTY.value: PenaltyPacket,
+    EventStringCode.SPEED_TRAP.value: SpeedTrapPacket,
+    EventStringCode.START_LIGHTS.value: StartLightsPacket,
+    EventStringCode.LIGHTS_OUT.value: EventPacket,
+    EventStringCode.DRIVE_THROUGH_SERVED.value:
+        DriveThroughPenaltyServedPacket,
+    EventStringCode.STOP_GO_SERVED.value: StopGoPenaltyServedPacket,
+    EventStringCode.FLASHBACK.value: FlashbackPacket,
+    EventStringCode.BUTTON.value: ButtonsPacket,
+}

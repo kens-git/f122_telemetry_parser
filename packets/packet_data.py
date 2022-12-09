@@ -1,245 +1,227 @@
-import dataclasses
-import typing
-import custom_types.basic as bt
+from dataclasses import dataclass
+from custom_types.basic import (
+    Double, Float, Int8, Int16, UInt8, UInt16, UInt32)
+from custom_types.game import CarCornerData, Name, TyreStintData
 
 
-T = typing.TypeVar('T')
-
-
-CarCornerData = typing.Tuple[T, T, T, T]
-
-
-TyreStintData = typing.Tuple[T, T, T, T, T, T, T, T]
-
-
-Name = typing.Tuple[
-    bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char,
-    bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char,
-    bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char,
-    bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char,
-    bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char,
-    bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char, bt.Char,
-]
-
-
-@dataclasses.dataclass
+@dataclass
 class CarDamageData:
-    tyresWear: CarCornerData[bt.Float]
-    tyresDamage: CarCornerData[bt.UInt8]
-    brakesDamage: CarCornerData[bt.UInt8]
-    frontLeftWingDamage: bt.UInt8
-    frontRightWingDamage: bt.UInt8
-    rearWingDamage: bt.UInt8
-    floorDamage: bt.UInt8
-    diffuserDamage: bt.UInt8
-    sidepodDamage: bt.UInt8
-    drsFault: bt.UInt8
-    ersFault: bt.UInt8
-    gearBoxDamage: bt.UInt8
-    engineDamage: bt.UInt8
-    engineMGUHWear: bt.UInt8
-    engineESWear: bt.UInt8
-    engineCEWear: bt.UInt8
-    engineICEWear: bt.UInt8
-    engineMGUKWear: bt.UInt8
-    engineTCWear: bt.UInt8
-    engineBlown: bt.UInt8
-    engineSeized: bt.UInt8
+    tyresWear: CarCornerData[Float]
+    tyresDamage: CarCornerData[UInt8]
+    brakesDamage: CarCornerData[UInt8]
+    frontLeftWingDamage: UInt8
+    frontRightWingDamage: UInt8
+    rearWingDamage: UInt8
+    floorDamage: UInt8
+    diffuserDamage: UInt8
+    sidepodDamage: UInt8
+    drsFault: UInt8
+    ersFault: UInt8
+    gearBoxDamage: UInt8
+    engineDamage: UInt8
+    engineMGUHWear: UInt8
+    engineESWear: UInt8
+    engineCEWear: UInt8
+    engineICEWear: UInt8
+    engineMGUKWear: UInt8
+    engineTCWear: UInt8
+    engineBlown: UInt8
+    engineSeized: UInt8
 
 
-@dataclasses.dataclass
+@dataclass
 class CarSetupsData:
-    frontWing: bt.UInt8
-    rearWing: bt.UInt8
-    onThrottle: bt.UInt8
-    offThrottle: bt.UInt8
-    frontCamber: bt.Float
-    rearCamber: bt.Float
-    frontToe: bt.Float
-    rearToe: bt.Float
-    frontSuspension: bt.UInt8
-    rearSuspension: bt.UInt8
-    frontAntiRollBar: bt.UInt8
-    rearAntiRollBar: bt.UInt8
-    frontSuspensionHeight: bt.UInt8
-    rearSuspensionHeight: bt.UInt8
-    brakePressure: bt.UInt8
-    brakeBias: bt.UInt8
-    rearLeftTyrePressure: bt.Float
-    rearRightTyrePressure: bt.Float
-    frontLeftTyrePressure: bt.Float
-    frontRightTyrePressure: bt.Float
-    ballast: bt.UInt8
-    fuelLoad: bt.Float
+    frontWing: UInt8
+    rearWing: UInt8
+    onThrottle: UInt8
+    offThrottle: UInt8
+    frontCamber: Float
+    rearCamber: Float
+    frontToe: Float
+    rearToe: Float
+    frontSuspension: UInt8
+    rearSuspension: UInt8
+    frontAntiRollBar: UInt8
+    rearAntiRollBar: UInt8
+    frontSuspensionHeight: UInt8
+    rearSuspensionHeight: UInt8
+    brakePressure: UInt8
+    brakeBias: UInt8
+    rearLeftTyrePressure: Float
+    rearRightTyrePressure: Float
+    frontLeftTyrePressure: Float
+    frontRightTyrePressure: Float
+    ballast: UInt8
+    fuelLoad: Float
 
 
-@dataclasses.dataclass
+@dataclass
 class CarStatusData:
-    tractionControl: bt.UInt8
-    antiLockBrakes: bt.UInt8
-    fuelMix: bt.UInt8
-    frontBrakeBias: bt.UInt8
-    pitLimiterStatus: bt.UInt8
-    fuelInTank: bt.Float
-    fuelCapacity: bt.Float
-    fuelRemainingLaps: bt.Float
-    maxRPM: bt.UInt16
-    idleRPM: bt.UInt16
-    maxGears: bt.UInt8
-    drsAllowed: bt.UInt8
-    drsActivationDistance: bt.UInt16
-    actualTypeCompound: bt.UInt8
-    visualTyreCompound: bt.UInt8
-    tyresAgeLaps: bt.UInt8
-    vehicleFiaFlags: bt.Int8
-    ersStoreEnergy: bt.Float
-    ersDeployMode: bt.UInt8
-    ersHarvestedThisLapMGUK: bt.Float
-    ersHarvestedThisLapMGUH: bt.Float
-    ersDeployedThisLap: bt.Float
-    networkPaused: bt.UInt8
+    tractionControl: UInt8
+    antiLockBrakes: UInt8
+    fuelMix: UInt8
+    frontBrakeBias: UInt8
+    pitLimiterStatus: UInt8
+    fuelInTank: Float
+    fuelCapacity: Float
+    fuelRemainingLaps: Float
+    maxRPM: UInt16
+    idleRPM: UInt16
+    maxGears: UInt8
+    drsAllowed: UInt8
+    drsActivationDistance: UInt16
+    actualTypeCompound: UInt8
+    visualTyreCompound: UInt8
+    tyresAgeLaps: UInt8
+    vehicleFiaFlags: Int8
+    ersStoreEnergy: Float
+    ersDeployMode: UInt8
+    ersHarvestedThisLapMGUK: Float
+    ersHarvestedThisLapMGUH: Float
+    ersDeployedThisLap: Float
+    networkPaused: UInt8
 
 
-@dataclasses.dataclass
+@dataclass
 class CarTelemetryData:
-    speed: bt.UInt16
-    throttle: bt.Float
-    steer: bt.Float
-    brake: bt.Float
-    clutch: bt.UInt8
-    gear: bt.Int8
-    engineRPM: bt.UInt16
-    drs: bt.UInt8
-    revLightsPercent: bt.UInt8
-    revLightsBitValue: bt.UInt16
-    brakesTemperature: CarCornerData[bt.UInt16]
-    tiresSurfaceTemperature: CarCornerData[bt.UInt8]
-    tiresInnerTemperature: CarCornerData[bt.UInt8]
-    engineTemperature: bt.UInt16
-    tiresPressure: CarCornerData[bt.Float]
-    surfaceType: CarCornerData[bt.UInt8]
+    speed: UInt16
+    throttle: Float
+    steer: Float
+    brake: Float
+    clutch: UInt8
+    gear: Int8
+    engineRPM: UInt16
+    drs: UInt8
+    revLightsPercent: UInt8
+    revLightsBitValue: UInt16
+    brakesTemperature: CarCornerData[UInt16]
+    tiresSurfaceTemperature: CarCornerData[UInt8]
+    tiresInnerTemperature: CarCornerData[UInt8]
+    engineTemperature: UInt16
+    tiresPressure: CarCornerData[Float]
+    surfaceType: CarCornerData[UInt8]
 
 
-@dataclasses.dataclass
+@dataclass
 class FinalClassificationData:
-    position: bt.UInt8
-    numLaps: bt.UInt8
-    gridPosition: bt.UInt8
-    points: bt.UInt8
-    numPitStops: bt.UInt8
-    resultStatus: bt.UInt8
-    bestLapTimeInMS: bt.UInt32
-    totalRaceTime: bt.Double
-    penaltiesTime: bt.UInt8
-    numPenalties: bt.UInt8
-    numTyreStints: bt.UInt8
-    tyreStintsActual: TyreStintData[bt.UInt8]
-    tyreStintsVisual: TyreStintData[bt.UInt8]
-    tyreStintEndLaps: TyreStintData[bt.UInt8]
+    position: UInt8
+    numLaps: UInt8
+    gridPosition: UInt8
+    points: UInt8
+    numPitStops: UInt8
+    resultStatus: UInt8
+    bestLapTimeInMS: UInt32
+    totalRaceTime: Double
+    penaltiesTime: UInt8
+    numPenalties: UInt8
+    numTyreStints: UInt8
+    tyreStintsActual: TyreStintData[UInt8]
+    tyreStintsVisual: TyreStintData[UInt8]
+    tyreStintEndLaps: TyreStintData[UInt8]
 
 
-@dataclasses.dataclass
+@dataclass
 class LapDataData:
-    lastLapTimeInMS: bt.UInt32
-    currentLapTimeInMS: bt.UInt32
-    sector1TimeInMS: bt.UInt16
-    sector2TimeInMS: bt.UInt16
-    lapDistance: bt.Float
-    totalDistance: bt.Float
-    safetyCarDelta: bt.Float
-    carPosition: bt.UInt8
-    currentLapNum: bt.UInt8
-    pitStatus: bt.UInt8
-    numPitStops: bt.UInt8
-    sector: bt.UInt8
-    currentLapInvalid: bt.UInt8
-    penalties: bt.UInt8
-    warnings: bt.UInt8
-    numUnservedDriveThroughPens: bt.UInt8
-    numUnservedStopGoPens: bt.UInt8
-    gridPosition: bt.UInt8
-    driverStatus: bt.UInt8
-    resultStatus: bt.UInt8
-    pitLaneTimerActive: bt.UInt8
-    pitLaneTimeInLaneInMS: bt.UInt16
-    pitStopTimerInMS: bt.UInt16
-    pitStopShouldServePen: bt.UInt8
+    lastLapTimeInMS: UInt32
+    currentLapTimeInMS: UInt32
+    sector1TimeInMS: UInt16
+    sector2TimeInMS: UInt16
+    lapDistance: Float
+    totalDistance: Float
+    safetyCarDelta: Float
+    carPosition: UInt8
+    currentLapNum: UInt8
+    pitStatus: UInt8
+    numPitStops: UInt8
+    sector: UInt8
+    currentLapInvalid: UInt8
+    penalties: UInt8
+    warnings: UInt8
+    numUnservedDriveThroughPens: UInt8
+    numUnservedStopGoPens: UInt8
+    gridPosition: UInt8
+    driverStatus: UInt8
+    resultStatus: UInt8
+    pitLaneTimerActive: UInt8
+    pitLaneTimeInLaneInMS: UInt16
+    pitStopTimerInMS: UInt16
+    pitStopShouldServePen: UInt8
 
 
-@dataclasses.dataclass
+@dataclass
 class LapHistoryData:
-    lapTimeInMS: bt.UInt32
-    sector1TimeInMS: bt.UInt16
-    sector2TimeInMS: bt.UInt16
-    sector3TimeInMS: bt.UInt16
-    lapValidBitFlags: bt.UInt8
+    lapTimeInMS: UInt32
+    sector1TimeInMS: UInt16
+    sector2TimeInMS: UInt16
+    sector3TimeInMS: UInt16
+    lapValidBitFlags: UInt8
 
 
-@dataclasses.dataclass
+@dataclass
 class LobbyInfoData:
-    aiControlled: bt.UInt8
-    teamId: bt.UInt8
-    nationality: bt.UInt8
+    aiControlled: UInt8
+    teamId: UInt8
+    nationality: UInt8
     name: Name
-    carNumber: bt.UInt8
-    readyStatus: bt.UInt8
+    carNumber: UInt8
+    readyStatus: UInt8
 
 
-@dataclasses.dataclass
+@dataclass
 class MarshalZone:
-    zoneStart: bt.Float
-    zoneFlag: bt.Int8
+    zoneStart: Float
+    zoneFlag: Int8
 
 
-@dataclasses.dataclass
+@dataclass
 class MotionData:
-    worldPositionX: bt.Float
-    worldPositionY: bt.Float
-    worldPositionZ: bt.Float
-    worldVelocityX: bt.Float
-    worldVelocityY: bt.Float
-    worldVelocityZ: bt.Float
-    worldForwardDirX: bt.Int16
-    worldForwardDirY: bt.Int16
-    worldForwardDirZ: bt.Int16
-    worldRightDirX: bt.Int16
-    worldRightDirY: bt.Int16
-    worldRightDirZ: bt.Int16
-    gForceLateral: bt.Float
-    gForceLongitudinal: bt.Float
-    gForceVertical: bt.Float
-    yaw: bt.Float
-    pitch: bt.Float
-    roll: bt.Float
+    worldPositionX: Float
+    worldPositionY: Float
+    worldPositionZ: Float
+    worldVelocityX: Float
+    worldVelocityY: Float
+    worldVelocityZ: Float
+    worldForwardDirX: Int16
+    worldForwardDirY: Int16
+    worldForwardDirZ: Int16
+    worldRightDirX: Int16
+    worldRightDirY: Int16
+    worldRightDirZ: Int16
+    gForceLateral: Float
+    gForceLongitudinal: Float
+    gForceVertical: Float
+    yaw: Float
+    pitch: Float
+    roll: Float
 
 
-@dataclasses.dataclass
+@dataclass
 class ParticipantsData:
-    aiControlled: bt.UInt8
-    driverId: bt.UInt8
-    networkId: bt.UInt8
-    teamId: bt.UInt8
-    myTeam: bt.UInt8
-    raceNumber: bt.UInt8
-    nationality: bt.UInt8
+    aiControlled: UInt8
+    driverId: UInt8
+    networkId: UInt8
+    teamId: UInt8
+    myTeam: UInt8
+    raceNumber: UInt8
+    nationality: UInt8
     name: Name
-    yourTelemetry: bt.UInt8
+    yourTelemetry: UInt8
 
 
-@dataclasses.dataclass
+@dataclass
 class TyreStintHistoryData:
-    endLap: bt.UInt8
-    tyreActualCompound: bt.UInt8
-    tyreVisualCompound: bt.UInt8
+    endLap: UInt8
+    tyreActualCompound: UInt8
+    tyreVisualCompound: UInt8
 
 
-@dataclasses.dataclass
+@dataclass
 class WeatherForecastSample:
-    sessionType: bt.UInt8
-    timeOffset: bt.UInt8
-    weather: bt.UInt8
-    trackTemperature: bt.Int8
-    trackTemperatureChange: bt.Int8
-    airTemperature: bt.Int8
-    airTemperatureChange: bt.Int8
-    rainPercentage: bt.UInt8
+    sessionType: UInt8
+    timeOffset: UInt8
+    weather: UInt8
+    trackTemperature: Int8
+    trackTemperatureChange: Int8
+    airTemperature: Int8
+    airTemperatureChange: Int8
+    rainPercentage: UInt8

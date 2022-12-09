@@ -1,16 +1,21 @@
 import datetime
 import logging
-import typing
-import constants.constants as const
-from constants.constants import PenaltyId
-import constants.constants as const
-import filters.Filter as fil
-import packets.packet_data as pd
-import packets.packets as pk
+from typing import cast, Dict, Optional
+from constants.constants import (
+    DRIVER_NAMES, EventStringCode, NULL_DRIVER, PenaltyId, SESSION_TEXT,
+    TRACK_NAMES, WEATHER_TEXT)
+from custom_types.game import GridData
+from filters.Filter import Filter
+from packets.packet_data import ParticipantsData
+from packets.packets import (
+    DriveThroughPenaltyServedPacket, EventPacket, FastestLapPacket, Packet,
+    PacketId, ParticipantsPacket, PenaltyPacket, RaceWinnerPacket,
+    RetirementPacket, SessionPacket, StartLightsPacket,
+    StopGoPenaltyServedPacket)
 import utilities.data as du
 
 
-PENALTY_STRINGS: typing.Dict[int, str] = {
+PENALTY_STRINGS: Dict[int, str] = {
     0: 'drive through',
     1: 'stop-go',
     2: 'grid penalty',
@@ -31,7 +36,7 @@ PENALTY_STRINGS: typing.Dict[int, str] = {
     17: 'black flag timer',
 }
 
-INFRINGEMENT_STRINGS: typing.Dict[int, str] = {
+INFRINGEMENT_STRINGS: Dict[int, str] = {
     0: 'blocking by slow driving',
     1: 'blocking by driving the wrong way',
     2: 'reversing off the start line',
@@ -121,8 +126,7 @@ def create_time_of_day_string(timestamp: int) -> str:
 
 def create_penalty_string(
         penalty_id: int, infringement_id: int, offender: str,
-        second_driver: typing.Optional[str] = None,
-        time: typing.Optional[int] = None):
+        second_driver: Optional[str] = None, time: Optional[int] = None):
     penalty = PENALTY_STRINGS[penalty_id]
     infringement = INFRINGEMENT_STRINGS[infringement_id]
     if penalty_id in GENERIC_PENALTY_IDS:
@@ -148,94 +152,93 @@ def create_penalty_string(
 
 def get_driver_name(driver_id: int, fallback_name: str):
     try:
-        return const.DRIVER_NAMES[driver_id]
+        return DRIVER_NAMES[driver_id]
     except KeyError:
         pass
     return fallback_name
 
 
-class LogFilter(fil.Filter):
+class LogFilter(Filter):
     def __init__(self):
         self.data = {}
         self.session_displayed = False
-        self.participants: typing.Optional[
-            pk.GridData[pd.ParticipantsData]] = None
+        self.participants: Optional[GridData[ParticipantsData]] = None
         self.numActiveCars: int = 0
 
-    def filter(self, packet: pk.Packet):
+    def filter(self, packet: Packet):
         packet_id = packet.packetId.value
-        if packet_id == const.PacketId.SESSION.value:
-            self._filter_session(typing.cast(pk.SessionPacket, packet))
-        elif packet_id == const.PacketId.EVENT.value:
-            self._filter_event(typing.cast(pk.EventPacket, packet))
-        elif packet_id == const.PacketId.PARTICIPANTS.value:
-            self._filter_participants(
-                typing.cast(pk.ParticipantsPacket, packet))
+        if packet_id == PacketId.SESSION.value:
+            self._filter_session(cast(SessionPacket, packet))
+        elif packet_id == PacketId.EVENT.value:
+            self._filter_event(cast(EventPacket, packet))
+        elif packet_id == PacketId.PARTICIPANTS.value:
+            self._filter_participants(cast(ParticipantsPacket, packet))
 
     def _get_driver_name(self, vehicle_index: int):
-        participant = self.participants[vehicle_index]
+        participant = cast(GridData[ParticipantsData],
+                           self.participants)[vehicle_index]
         return get_driver_name(
             participant.driverId.value, du.to_string(participant.name))
 
-    def _filter_session(self, packet: pk.SessionPacket):
+    def _filter_session(self, packet: SessionPacket):
         if self.session_displayed is True:
             return
         self.session_displayed = True
-        logging.info(f'\t{const.TRACK_NAMES[packet.trackId.value]}')
-        logging.info(f'\t{const.SESSION_TEXT[packet.sessionType.value]}')
+        logging.info(f'\t{TRACK_NAMES[packet.trackId.value]}')
+        logging.info(f'\t{SESSION_TEXT[packet.sessionType.value]}')
         logging.info(f'\t{create_time_of_day_string(packet.timeOfDay.value)}')
-        logging.info(f'\t{const.WEATHER_TEXT[packet.weather.value]}')
+        logging.info(f'\t{WEATHER_TEXT[packet.weather.value]}')
         logging.info(f'\tAir: {packet.airTemperature.value}°')
         logging.info(f'\tTrack: {packet.trackTemperature.value}°')
 
-    def _filter_event(self, packet: pk.EventPacket):
+    def _filter_event(self, packet: EventPacket):
         event_code = du.to_string(packet.eventStringCode)
-        if event_code == const.EventStringCode.SESSION_START.value:
+        if event_code == EventStringCode.SESSION_START.value:
             print_with_session_timestamp(
                 packet.sessionTime.value, 'Session started.')
-        elif event_code == const.EventStringCode.SESSION_END.value:
+        elif event_code == EventStringCode.SESSION_END.value:
             print_with_session_timestamp(
                 packet.sessionTime.value, 'Session ended.')
             self._reset()
-        elif event_code == const.EventStringCode.FASTEST_LAP.value:
-            packet = typing.cast(pk.FastestLapPacket, packet)
+        elif event_code == EventStringCode.FASTEST_LAP.value:
+            packet = cast(FastestLapPacket, packet)
             driver_name = self._get_driver_name(packet.vehicleIdx.value)
             print_with_session_timestamp(
                 packet.sessionTime.value,
                 f'{driver_name} has set the fastest lap time of \
 {str(datetime.timedelta(seconds=packet.lapTime.value))[3:-3]}.')
-        elif event_code == const.EventStringCode.RETIREMENT.value:
-            packet = typing.cast(pk.RetirementPacket, packet)
+        elif event_code == EventStringCode.RETIREMENT.value:
+            packet = cast(RetirementPacket, packet)
             driver_name = self._get_driver_name(packet.vehicleIdx.value)
             print_with_session_timestamp(
                 packet.sessionTime.value,
                 f'{driver_name} has retired from the session.')
-        elif event_code == const.EventStringCode.DRS_ENABLED.value:
+        elif event_code == EventStringCode.DRS_ENABLED.value:
             print_with_session_timestamp(
                 packet.sessionTime.value, 'DRS has been enabled.')
-        elif event_code == const.EventStringCode.DRS_DISABLED.value:
+        elif event_code == EventStringCode.DRS_DISABLED.value:
             print_with_session_timestamp(
                 packet.sessionTime.value, 'DRS has been disabled.')
-        elif event_code == const.EventStringCode.TEAM_MATE_IN_PITS.value:
+        elif event_code == EventStringCode.TEAM_MATE_IN_PITS.value:
             print_with_session_timestamp(
                 packet.sessionTime.value, 'Your teammate is in the pits.')
-        elif event_code == const.EventStringCode.CHEQUERED_FLAG.value:
+        elif event_code == EventStringCode.CHEQUERED_FLAG.value:
             print_with_session_timestamp(
                 packet.sessionTime.value,
                 'The chequered flag has been waved.')
-        elif event_code == const.EventStringCode.RACE_WINNER.value:
-            packet = typing.cast(pk.RaceWinnerPacket, packet)
+        elif event_code == EventStringCode.RACE_WINNER.value:
+            packet = cast(RaceWinnerPacket, packet)
             driver_name = self._get_driver_name(packet.vehicleIdx.value)
             print_with_session_timestamp(
                 packet.sessionTime.value,
                 f'{driver_name} has been declared the winner.')
-        elif event_code == const.EventStringCode.PENALTY.value:
-            packet = typing.cast(pk.PenaltyPacket, packet)
+        elif event_code == EventStringCode.PENALTY.value:
+            packet = cast(PenaltyPacket, packet)
             if packet.penaltyType.value in IGNORED_PENALTY_IDS:
                 return
             other_vehicle = packet.otherVehicleIdx.value
             second_driver = (self._get_driver_name(other_vehicle)
-                             if other_vehicle != const.NULL_DRIVER else None)
+                             if other_vehicle != NULL_DRIVER else None)
             time = packet.time.value if packet.time.value != 255 else None
             p_string = create_penalty_string(
                 packet.penaltyType.value,
@@ -244,34 +247,33 @@ class LogFilter(fil.Filter):
                 second_driver=second_driver, time=time)
             print_with_session_timestamp(
                 packet.sessionTime.value, p_string)
-        elif event_code == const.EventStringCode.SPEED_TRAP.value:
+        elif event_code == EventStringCode.SPEED_TRAP.value:
             pass
-        elif event_code == const.EventStringCode.START_LIGHTS.value:
-            packet = typing.cast(pk.StartLightsPacket, packet)
+        elif event_code == EventStringCode.START_LIGHTS.value:
+            packet = cast(StartLightsPacket, packet)
             print_with_session_timestamp(
                 packet.sessionTime.value, '*' * packet.numLights.value)
-        elif event_code == const.EventStringCode.LIGHTS_OUT.value:
+        elif event_code == EventStringCode.LIGHTS_OUT.value:
             print_with_session_timestamp(
                 packet.sessionTime.value,
                 'It\'s lights out and away we go!')
-        elif event_code == const.EventStringCode.DRIVE_THROUGH_SERVED.value:
-            packet = typing.cast(pk.DriveThroughPenaltyServedPacket,
-                                 packet)
+        elif event_code == EventStringCode.DRIVE_THROUGH_SERVED.value:
+            packet = cast(DriveThroughPenaltyServedPacket, packet)
             driver_name = self._get_driver_name(packet.vehicleIdx.value)
             print_with_session_timestamp(
                 packet.sessionTime.value,
                 f'{driver_name} has served a drive through penalty.')
-        elif event_code == const.EventStringCode.STOP_GO_SERVED.value:
-            packet = typing.cast(pk.StopGoPenaltyServedPacket, packet)
+        elif event_code == EventStringCode.STOP_GO_SERVED.value:
+            packet = cast(StopGoPenaltyServedPacket, packet)
             driver_name = self._get_driver_name(packet.vehicleIdx.value)
             print_with_session_timestamp(
                 packet.sessionTime.value,
                 f'{driver_name} has served a stop-and-go penalty.')
-        elif event_code == const.EventStringCode.FLASHBACK.value:
+        elif event_code == EventStringCode.FLASHBACK.value:
             print_with_session_timestamp(
                 packet.sessionTime.value, 'Flashback initiated.')
 
-    def _filter_participants(self, packet: pk.ParticipantsPacket):
+    def _filter_participants(self, packet: ParticipantsPacket):
         if self.participants is not None:
             return
         self.participants = packet.participants

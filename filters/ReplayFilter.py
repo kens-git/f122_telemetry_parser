@@ -1,17 +1,23 @@
-import dataclasses
-import enum
+from dataclasses import dataclass
+from enum import Enum
 import json
 import logging
-import pathlib
+from pathlib import Path
 import time
 from typing import Any, cast, Dict, List
-import constants.constants as const
-import filters.Filter as fil
-import packets.packets as pk
+from constants.constants import (
+    GRID_COUNT, EventStringCode, PacketId, TRACK_NAMES, SESSION_TEXT)
+from filters.Filter import Filter
+from packets.packets import (
+    CarDamagePacket, CarSetupsPacket, CarStatusPacket, CarTelemetryPacket,
+    DriveThroughPenaltyServedPacket, EventPacket, FastestLapPacket,
+    FlashbackPacket, LapDataPacket, MotionPacket, Packet, ParticipantsPacket,
+    PenaltyPacket, RaceWinnerPacket, RetirementPacket, SessionPacket,
+    SpeedTrapPacket, StartLightsPacket, StopGoPenaltyServedPacket)
 import utilities.data as du
 
 
-class DataStorePolicy(enum.Enum):
+class DataStorePolicy(Enum):
     ALL = 0,
     FIRST = 1,
     ON_CHANGE = 2,
@@ -37,19 +43,19 @@ def set(data: List[Any], timestamp: float, value: Any,
         raise ValueError('No matching UpdatePolicy.')
 
 
-@dataclasses.dataclass
+@dataclass
 class DataPoint():
     timestamp: float
     value: Any
 
 
-@dataclasses.dataclass
+@dataclass
 class DataField:
     field: str
     policy: DataStorePolicy
 
 
-class ReplayFilter(fil.Filter):
+class ReplayFilter(Filter):
     def __init__(self):
         self.version = 1
         self.session_start_time: float = 0
@@ -59,37 +65,40 @@ class ReplayFilter(fil.Filter):
         self.data: Dict[str, Any] = {}
         self._reset()
 
-    def filter(self, packet: pk.Packet):
+    # TODO: filter final classification to ensure all driver data is available after a finish
+    #       (since it's possible the session ends without all drivers finishing before the
+    #        user advances to the next screen)
+    def filter(self, packet: Packet):
         packet_id = packet.packetId.value
-        if packet_id == const.PacketId.MOTION.value:
-            packet = cast(pk.MotionPacket, packet)
+        if packet_id == PacketId.MOTION.value:
+            packet = cast(MotionPacket, packet)
             self._filter_motion(packet)
-        elif packet_id == const.PacketId.SESSION.value:
-            packet = cast(pk.SessionPacket, packet)
+        elif packet_id == PacketId.SESSION.value:
+            packet = cast(SessionPacket, packet)
             self._filter_session(packet)
-        elif packet_id == const.PacketId.LAP_DATA.value:
-            packet = cast(pk.LapDataPacket, packet)
+        elif packet_id == PacketId.LAP_DATA.value:
+            packet = cast(LapDataPacket, packet)
             self._filter_lap_data(packet)
-        elif packet_id == const.PacketId.EVENT.value:
-            packet = cast(pk.EventPacket, packet)
+        elif packet_id == PacketId.EVENT.value:
+            packet = cast(EventPacket, packet)
             self._filter_event(packet)
-        elif packet_id == const.PacketId.PARTICIPANTS.value:
-            packet = cast(pk.ParticipantsPacket, packet)
+        elif packet_id == PacketId.PARTICIPANTS.value:
+            packet = cast(ParticipantsPacket, packet)
             self._filter_participants(packet)
-        elif packet_id == const.PacketId.CAR_SETUPS.value:
-            packet = cast(pk.CarSetupsPacket, packet)
+        elif packet_id == PacketId.CAR_SETUPS.value:
+            packet = cast(CarSetupsPacket, packet)
             self._filter_car_setups(packet)
-        elif packet_id == const.PacketId.CAR_TELEMETRY.value:
-            packet = cast(pk.CarTelemetryPacket, packet)
+        elif packet_id == PacketId.CAR_TELEMETRY.value:
+            packet = cast(CarTelemetryPacket, packet)
             self._filter_car_telemetry(packet)
-        elif packet_id == const.PacketId.CAR_STATUS.value:
-            packet = cast(pk.CarStatusPacket, packet)
+        elif packet_id == PacketId.CAR_STATUS.value:
+            packet = cast(CarStatusPacket, packet)
             self._filter_car_status(packet)
-        elif packet_id == const.PacketId.CAR_DAMAGE.value:
-            packet = cast(pk.CarDamagePacket, packet)
+        elif packet_id == PacketId.CAR_DAMAGE.value:
+            packet = cast(CarDamagePacket, packet)
             self._filter_car_damage(packet)
 
-    def _filter_car_damage(self, packet: pk.CarDamagePacket):
+    def _filter_car_damage(self, packet: CarDamagePacket):
         timestamp = packet.sessionTime.value
         for index, data in enumerate(packet.carDamageData):
             damage_data = self.data['car_damage'][index]
@@ -139,7 +148,7 @@ class ReplayFilter(fil.Filter):
             set(damage_data['engineSeized'], timestamp,
                 data.engineSeized.value, DataStorePolicy.ON_CHANGE)
 
-    def _filter_car_setups(self, packet: pk.CarSetupsPacket):
+    def _filter_car_setups(self, packet: CarSetupsPacket):
         timestamp = packet.sessionTime.value
         for index, data in enumerate(packet.carSetups):
             setup_data = self.data['car_setups'][index]
@@ -188,7 +197,7 @@ class ReplayFilter(fil.Filter):
             set(setup_data['fuelLoad'], timestamp, data.fuelLoad.value,
                 DataStorePolicy.ON_CHANGE)
 
-    def _filter_car_status(self, packet: pk.CarStatusPacket):
+    def _filter_car_status(self, packet: CarStatusPacket):
         timestamp = packet.sessionTime.value
         for index, data in enumerate(packet.carStatusData):
             status_data = self.data['car_status'][index]
@@ -239,7 +248,7 @@ class ReplayFilter(fil.Filter):
             set(status_data['networkPaused'], timestamp,
                 data.networkPaused.value, DataStorePolicy.ON_CHANGE)
 
-    def _filter_car_telemetry(self, packet: pk.CarTelemetryPacket):
+    def _filter_car_telemetry(self, packet: CarTelemetryPacket):
         timestamp = packet.sessionTime.value
         for index, data in enumerate(packet.carTelemetryData):
             telem_data = self.data['car_telemetry'][index]
@@ -287,47 +296,52 @@ class ReplayFilter(fil.Filter):
                 tuple(x.value for x in data.surfaceType),
                 DataStorePolicy.ON_CHANGE)
 
-    def _filter_event(self, packet: pk.EventPacket):
+    def _filter_event(self, packet: EventPacket):
         event_code = du.to_string(packet.eventStringCode)
-        if event_code == const.EventStringCode.BUTTON.value:
+        if event_code == EventStringCode.BUTTON.value:
             return
-        if event_code == const.EventStringCode.SESSION_START.value:
+        if event_code == EventStringCode.SESSION_START.value:
+            # TODO: this needs to reset if multiple session starts are detected:
+            #       It's possible to open the pause menu while waiting on the grid
+            #       and after closing the menu a session start event is sent.
+            #       If the user then quits the race no end event is sent, causing
+            #       the filter to wait for an end event that isn't coming.
             logging.info('Session start detected.')
             self.session_start_time = time.time()
             self.data['event'][event_code] = (
                 packet.sessionTime.value, event_code)
-        elif event_code == const.EventStringCode.SESSION_END.value:
+        elif event_code == EventStringCode.SESSION_END.value:
             logging.info('Session end detected.')
             self.session_end_time = time.time()
             self.data['event'][event_code] = (
                 packet.sessionTime.value, event_code)
             self._save_data()
-        elif event_code == const.EventStringCode.FASTEST_LAP.value:
-            packet = cast(pk.FastestLapPacket, packet)
+        elif event_code == EventStringCode.FASTEST_LAP.value:
+            packet = cast(FastestLapPacket, packet)
             self.data['event'][event_code].append((
                 packet.sessionTime.value, event_code,
                 packet.vehicleIdx.value, packet.lapTime.value))
-        elif event_code == const.EventStringCode.RETIREMENT.value:
-            packet = cast(pk.RetirementPacket, packet)
+        elif event_code == EventStringCode.RETIREMENT.value:
+            packet = cast(RetirementPacket, packet)
             self.data['event'][event_code].append((
                 packet.sessionTime.value, event_code,
                 packet.vehicleIdx.value))
-        elif event_code == const.EventStringCode.DRS_ENABLED.value:
+        elif event_code == EventStringCode.DRS_ENABLED.value:
             self.data['event'][event_code].append((
                 packet.sessionTime.value, event_code))
-        elif event_code == const.EventStringCode.DRS_DISABLED.value:
+        elif event_code == EventStringCode.DRS_DISABLED.value:
             self.data['event'][event_code].append((
                 packet.sessionTime.value, event_code))
-        elif event_code == const.EventStringCode.CHEQUERED_FLAG.value:
+        elif event_code == EventStringCode.CHEQUERED_FLAG.value:
             self.data['event'][event_code] = (
                 packet.sessionTime.value, event_code)
-        elif event_code == const.EventStringCode.RACE_WINNER.value:
-            packet = cast(pk.RaceWinnerPacket, packet)
+        elif event_code == EventStringCode.RACE_WINNER.value:
+            packet = cast(RaceWinnerPacket, packet)
             self.data['event'][event_code] = (
                 packet.sessionTime.value, event_code,
                 packet.vehicleIdx.value)
-        elif event_code == const.EventStringCode.PENALTY.value:
-            packet = cast(pk.PenaltyPacket, packet)
+        elif event_code == EventStringCode.PENALTY.value:
+            packet = cast(PenaltyPacket, packet)
             self.data['event'][event_code].append(
                 (packet.sessionTime.value, event_code,
                     packet.penaltyType.value,
@@ -336,40 +350,40 @@ class ReplayFilter(fil.Filter):
                     packet.otherVehicleIdx.value,
                     packet.time.value,
                     packet.placesGained.value))
-        elif event_code == const.EventStringCode.SPEED_TRAP.value:
-            packet = cast(pk.SpeedTrapPacket, packet)
+        elif event_code == EventStringCode.SPEED_TRAP.value:
+            packet = cast(SpeedTrapPacket, packet)
             if packet.isOverallFastestInSession.value == 1:
                 self.data['event'][event_code].append((
                     packet.sessionTime.value,
                     event_code,
                     packet.vehicleIdx.value,
                     packet.speed.value))
-        elif event_code == const.EventStringCode.START_LIGHTS.value:
-            packet = cast(pk.StartLightsPacket, packet)
+        elif event_code == EventStringCode.START_LIGHTS.value:
+            packet = cast(StartLightsPacket, packet)
             self.data['event'][event_code].append(
                 (packet.sessionTime.value, event_code,
                     packet.numLights.value))
-        elif event_code == const.EventStringCode.LIGHTS_OUT.value:
+        elif event_code == EventStringCode.LIGHTS_OUT.value:
             self.data['event'][event_code] = (
                 packet.sessionTime.value, event_code)
-        elif event_code == const.EventStringCode.DRIVE_THROUGH_SERVED.value:
+        elif event_code == EventStringCode.DRIVE_THROUGH_SERVED.value:
             packet = cast(
-                pk.DriveThroughPenaltyServedPacket, packet)
+                DriveThroughPenaltyServedPacket, packet)
             self.data['event'][event_code].append((
                 packet.sessionTime.value, event_code,
                 packet.vehicleIdx.value))
-        elif event_code == const.EventStringCode.STOP_GO_SERVED.value:
-            packet = cast(pk.StopGoPenaltyServedPacket, packet)
+        elif event_code == EventStringCode.STOP_GO_SERVED.value:
+            packet = cast(StopGoPenaltyServedPacket, packet)
             self.data['event'][event_code].append((
                 packet.sessionTime.value, event_code,
                 packet.vehicleIdx.value))
-        elif event_code == const.EventStringCode.FLASHBACK.value:
-            packet = cast(pk.FlashbackPacket, packet)
+        elif event_code == EventStringCode.FLASHBACK.value:
+            packet = cast(FlashbackPacket, packet)
             self.data['event'][event_code].append(
                 (packet.sessionTime.value, event_code,
                     packet.flashbackSessionTime.value))
 
-    def _filter_lap_data(self, packet: pk.LapDataPacket):
+    def _filter_lap_data(self, packet: LapDataPacket):
         timestamp = packet.sessionTime.value
         for index, data in enumerate(packet.lapData):
             lap_data = self.data['lap_data'][index]
@@ -417,7 +431,7 @@ class ReplayFilter(fil.Filter):
             set(lap_data['pitStopShouldServePen'], timestamp,
                 data.pitStopShouldServePen.value, DataStorePolicy.ON_CHANGE)
 
-    def _filter_motion(self, packet: pk.MotionPacket):
+    def _filter_motion(self, packet: MotionPacket):
         for index, data in enumerate(packet.carMotionData):
             data_list = self.data['motion'][index]
             set(data_list['worldPositionX'], packet.sessionTime.value,
@@ -430,7 +444,7 @@ class ReplayFilter(fil.Filter):
                 float('%.3f' % (data.yaw.value)),
                 DataStorePolicy.ON_CHANGE)
 
-    def _filter_participants(self, packet: pk.ParticipantsPacket):
+    def _filter_participants(self, packet: ParticipantsPacket):
         p_data = self.data['participants']
         if p_data['numActiveCars'] is None:
             p_data['numActiveCars'] = packet.numActiveCars.value
@@ -446,7 +460,7 @@ class ReplayFilter(fil.Filter):
                 participant['name'] = du.to_string(data.name)
                 participant['yourTelemetry'] = data.yourTelemetry.value
 
-    def _filter_session(self, packet: pk.SessionPacket):
+    def _filter_session(self, packet: SessionPacket):
         session_data = self.data['session']
         set(session_data['sessionUID'], packet.sessionTime.value,
             packet.sessionUID.value, DataStorePolicy.FIRST)
@@ -527,7 +541,7 @@ class ReplayFilter(fil.Filter):
                     'worldPositionX': [],
                     'worldPositionY': [],
                     'yaw': []
-                } for _ in range(const.GRID_COUNT)],
+                } for _ in range(GRID_COUNT)],
             'session': {
                 'sessionUID': [],
                 'weather': [],
@@ -585,23 +599,23 @@ class ReplayFilter(fil.Filter):
                     'pitLaneTimeInLaneInMS': [],
                     'pitStopTimerInMS': [],
                     'pitStopShouldServePen': [],
-                } for _ in range(const.GRID_COUNT)],
+                } for _ in range(GRID_COUNT)],
             'event': {
-                const.EventStringCode.SESSION_START.value: None,
-                const.EventStringCode.SESSION_END.value: None,
-                const.EventStringCode.FASTEST_LAP.value: [],
-                const.EventStringCode.RETIREMENT.value: [],
-                const.EventStringCode.DRS_ENABLED.value: [],
-                const.EventStringCode.DRS_DISABLED.value: [],
-                const.EventStringCode.CHEQUERED_FLAG.value: None,
-                const.EventStringCode.RACE_WINNER.value: None,
-                const.EventStringCode.PENALTY.value: [],
-                const.EventStringCode.SPEED_TRAP.value: [],
-                const.EventStringCode.START_LIGHTS.value: [],
-                const.EventStringCode.LIGHTS_OUT.value: None,
-                const.EventStringCode.DRIVE_THROUGH_SERVED.value: [],
-                const.EventStringCode.STOP_GO_SERVED.value: [],
-                const.EventStringCode.FLASHBACK.value: []},
+                EventStringCode.SESSION_START.value: None,
+                EventStringCode.SESSION_END.value: None,
+                EventStringCode.FASTEST_LAP.value: [],
+                EventStringCode.RETIREMENT.value: [],
+                EventStringCode.DRS_ENABLED.value: [],
+                EventStringCode.DRS_DISABLED.value: [],
+                EventStringCode.CHEQUERED_FLAG.value: None,
+                EventStringCode.RACE_WINNER.value: None,
+                EventStringCode.PENALTY.value: [],
+                EventStringCode.SPEED_TRAP.value: [],
+                EventStringCode.START_LIGHTS.value: [],
+                EventStringCode.LIGHTS_OUT.value: None,
+                EventStringCode.DRIVE_THROUGH_SERVED.value: [],
+                EventStringCode.STOP_GO_SERVED.value: [],
+                EventStringCode.FLASHBACK.value: []},
             'participants': {
                     'numActiveCars': None,
                     'participants':
@@ -615,7 +629,7 @@ class ReplayFilter(fil.Filter):
                             'nationality': None,
                             'name': None,
                             'yourTelemetry': None,
-                        } for _ in range(const.GRID_COUNT)]
+                        } for _ in range(GRID_COUNT)]
                 },
             'car_setups':
                 [{
@@ -641,7 +655,7 @@ class ReplayFilter(fil.Filter):
                     'frontRightTyrePressure': [],
                     'ballast': [],
                     'fuelLoad': [],
-                } for _ in range(const.GRID_COUNT)],
+                } for _ in range(GRID_COUNT)],
             'car_telemetry':
                 [{
                     'speed': [],
@@ -660,7 +674,7 @@ class ReplayFilter(fil.Filter):
                     'engineTemperature': [],
                     'tiresPressure': [],
                     'surfaceType': [],
-                } for _ in range(const.GRID_COUNT)],
+                } for _ in range(GRID_COUNT)],
             'car_status':
                 [{
                     'tractionControl': [],
@@ -686,7 +700,7 @@ class ReplayFilter(fil.Filter):
                     'ersHarvestedThisLapMGUH': [],
                     'ersDeployedThisLap': [],
                     'networkPaused': [],
-                } for _ in range(const.GRID_COUNT)],
+                } for _ in range(GRID_COUNT)],
             'car_damage':
                 [{
                     'tyresWear': [],
@@ -710,7 +724,7 @@ class ReplayFilter(fil.Filter):
                     'engineTCWear': [],
                     'engineBlown': [],
                     'engineSeized': [],
-                } for _ in range(const.GRID_COUNT)],
+                } for _ in range(GRID_COUNT)],
         }
 
     def _save_data(self):
@@ -722,14 +736,14 @@ class ReplayFilter(fil.Filter):
 {self.session_end_time - self.session_start_time}')
         logging.info('Writing data to file...')
         self.file_start_write_time = time.time()
-        track_name = const.TRACK_NAMES[
+        track_name = TRACK_NAMES[
             self.data['session']['trackId'][0][1]].replace(' ', '_')[0:12]
-        session_type = const.SESSION_TEXT[
+        session_type = SESSION_TEXT[
             self.data['session']['sessionType'][0][1]][0:12].replace(
                 ' ', '_').replace('-', '_')
         session_uid = str(self.data['session']['sessionUID'][0][1])[-8:]
         filename = f'{track_name}_{session_type}_{session_uid}.json'
-        filepath = pathlib.Path('saved_data')
+        filepath = Path('saved_data')
         filepath.mkdir(exist_ok=True)
         filepath = filepath / filename
         with filepath.open(mode='w', encoding='utf-8') as f:

@@ -1,6 +1,5 @@
-import enum
-from typing import Dict, Final, Type
-import packets.packets as pk
+from enum import Enum
+from typing import Dict, Final
 
 
 PACKET_HEADER_LENGTH: Final[int] = 24
@@ -12,7 +11,7 @@ GRID_COUNT: Final[int] = 22
 NULL_DRIVER: Final[int] = 255
 
 
-class EventStringCode(enum.Enum):
+class EventStringCode(Enum):
     SESSION_START = 'SSTA'
     SESSION_END = 'SEND'
     FASTEST_LAP = 'FTLP'
@@ -32,29 +31,7 @@ class EventStringCode(enum.Enum):
     BUTTON = 'BUTN'
 
 
-EVENT_DETAILS_TYPE: Final[Dict[str, Type[pk.EventPacket]]] = {
-    EventStringCode.SESSION_START.value: pk.EventPacket,
-    EventStringCode.SESSION_END.value: pk.EventPacket,
-    EventStringCode.FASTEST_LAP.value: pk.FastestLapPacket,
-    EventStringCode.RETIREMENT.value: pk.RetirementPacket,
-    EventStringCode.DRS_ENABLED.value: pk.EventPacket,
-    EventStringCode.DRS_DISABLED.value: pk.EventPacket,
-    EventStringCode.TEAM_MATE_IN_PITS.value: pk.TeamMateInPitsPacket,
-    EventStringCode.CHEQUERED_FLAG.value: pk.EventPacket,
-    EventStringCode.RACE_WINNER.value: pk.RaceWinnerPacket,
-    EventStringCode.PENALTY.value: pk.PenaltyPacket,
-    EventStringCode.SPEED_TRAP.value: pk.SpeedTrapPacket,
-    EventStringCode.START_LIGHTS.value: pk.StartLightsPacket,
-    EventStringCode.LIGHTS_OUT.value: pk.EventPacket,
-    EventStringCode.DRIVE_THROUGH_SERVED.value:
-        pk.DriveThroughPenaltyServedPacket,
-    EventStringCode.STOP_GO_SERVED.value: pk.StopGoPenaltyServedPacket,
-    EventStringCode.FLASHBACK.value: pk.FlashbackPacket,
-    EventStringCode.BUTTON.value: pk.ButtonsPacket,
-}
-
-
-class PacketId(enum.Enum):
+class PacketId(Enum):
     MOTION = 0
     SESSION = 1
     LAP_DATA = 2
@@ -69,23 +46,7 @@ class PacketId(enum.Enum):
     SESSION_HISTORY = 11
 
 
-PACKET_TYPE: Final[Dict[int, Type[pk.Packet]]] = {
-    PacketId.MOTION.value: pk.MotionPacket,
-    PacketId.SESSION.value: pk.SessionPacket,
-    PacketId.LAP_DATA.value: pk.LapDataPacket,
-    PacketId.EVENT.value: pk.EventPacket,
-    PacketId.PARTICIPANTS.value: pk.ParticipantsPacket,
-    PacketId.CAR_SETUPS.value: pk.CarSetupsPacket,
-    PacketId.CAR_TELEMETRY.value: pk.CarTelemetryPacket,
-    PacketId.CAR_STATUS.value: pk.CarStatusPacket,
-    PacketId.FINAL_CLASSIFICATION.value: pk.FinalClassificationPacket,
-    PacketId.LOBBY_INFO.value: pk.LobbyInfoPacket,
-    PacketId.CAR_DAMAGE.value: pk.CarDamagePacket,
-    PacketId.SESSION_HISTORY.value: pk.SessionHistoryPacket,
-}
-
-
-class TeamId(enum.Enum):
+class TeamId(Enum):
     MERCEDES = 0
     FERRARI = 1
     RED_BULL_RACING = 2
@@ -130,7 +91,7 @@ class TeamId(enum.Enum):
     MERCEDES_AMG_GT_BLACK_SERIES = 117
 
 
-class DriverId(enum.Enum):
+class DriverId(Enum):
     CARLOS_SAINZ = 0
     DANIIL_KVYAT = 1
     DANIEL_RICCIARDO = 2
@@ -363,7 +324,7 @@ DRIVER_NAMES: Dict[int, str] = {
 }
 
 
-class TrackId(enum.Enum):
+class TrackId(Enum):
     MELBOURNE = 0
     PAUL_RICARD = 1
     SHANGHAI = 2
@@ -432,7 +393,7 @@ TRACK_NAMES: Dict[int, str] = {
 }
 
 
-class NationalityId(enum.Enum):
+class NationalityId(Enum):
     AMERICAN = 1
     ARGENTINEAN = 2
     AUSTRALIAN = 3
@@ -522,7 +483,7 @@ class NationalityId(enum.Enum):
     VIETNAMESE = 87
 
 
-class GameModeId(enum.Enum):
+class GameModeId(Enum):
     EVENT_MODE = 0
     GRAND_PRIX = 3
     TIME_TRIAL = 5
@@ -539,7 +500,7 @@ class GameModeId(enum.Enum):
     BENCHMARK = 127
 
 
-class RulesetId(enum.Enum):
+class RulesetId(Enum):
     PRACTICE_AND_QUALIFYING = 0
     RACE = 1
     TIME_TRIAL = 2
@@ -551,7 +512,7 @@ class RulesetId(enum.Enum):
     RIVAL_DUEL = 11
 
 
-class Surface(enum.Enum):
+class Surface(Enum):
     TARMAC = 0
     RUMBLE_STRIP = 1
     CONCRETE = 2
@@ -566,7 +527,7 @@ class Surface(enum.Enum):
     RIDGED = 11
 
 
-class ButtonFlag(enum.Enum):
+class ButtonFlag(Enum):
     CROSS_OR_A = 0x00000001
     TRIANGLE_OR_Y = 0x00000002
     CIRCLE_OR_B = 0x00000004
@@ -601,7 +562,7 @@ class ButtonFlag(enum.Enum):
     UDP_ACTION_12 = 0x80000000
 
 
-class PenaltyId(enum.Enum):
+class PenaltyId(Enum):
     DRIVE_THROUGH = 0
     STOP_GO = 1
     GRID_PENALTY = 2
@@ -622,7 +583,7 @@ class PenaltyId(enum.Enum):
     BLACK_FLAG_TIMER = 17
 
 
-class InfringementId(enum.Enum):
+class InfringementId(Enum):
     BLOCKING_BY_SLOW_DRIVING = 0
     BLOCKING_BY_WRONG_WAY_DRIVING = 1
     REVERSING_OFF_THE_START_LINE = 2
@@ -680,7 +641,7 @@ class InfringementId(enum.Enum):
     ATTRIBUTE_ASSIGNED = 54
 
 
-class SessionId(enum.Enum):
+class SessionId(Enum):
     UNKNOWN = 0
     P1 = 1
     P2 = 2
@@ -715,7 +676,7 @@ SESSION_TEXT: Dict[int, str] = {
 }
 
 
-class WeatherId(enum.Enum):
+class WeatherId(Enum):
     CLEAR = 0
     LIGHT_CLOUD = 1
     OVERCAST = 2

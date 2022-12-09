@@ -1,8 +1,8 @@
-import filters.Filter as fil
-import packets.packets as pk
+from filters.Filter import Filter
+from packets.packets import Packet
 
 
-class NullFilter(fil.Filter):
+class NullFilter(Filter):
 
-    def filter(self, packet: pk.Packet):
+    def filter(self, packet: Packet):
         pass

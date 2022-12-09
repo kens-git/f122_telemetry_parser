@@ -1,11 +1,11 @@
-import abc
+from abc import ABC, abstractmethod
 import packets.packets as pk
 
 
-class Filter(abc.ABC):
+class Filter(ABC):
     def cleanup(self):
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def filter(self, packet: pk.Packet):
         pass

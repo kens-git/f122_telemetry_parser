@@ -1,10 +1,16 @@
-import abc
-import dataclasses
-import typing
+from abc import ABC
+from dataclasses import dataclass
+from typing import Any, Final
 
 
-class BasicType(abc.ABC):
-    def __init__(self, value: typing.Any):
+FLOAT_MIN: Final[float] = -340282346638528859811704183484516925440
+FLOAT_MAX: Final[float] = 340282346638528859811704183484516925440
+DOUBLE_MIN: Final[float] = -179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368  # noqa
+DOUBLE_MAX: Final[float] = 179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368  # noqa
+
+
+class BasicType(ABC):
+    def __init__(self, value: Any):
         self.value = value
 
     def __str__(self):
@@ -13,8 +19,11 @@ class BasicType(abc.ABC):
 
 class Char(BasicType):
     def __init__(self, value: str):
-        if ord(value) < -128 or ord(value) > 127:
-            raise ValueError(f'Char value out of range: {ord(value)}')
+        # Note: chars are implementation specific, but these appear to be
+        #       unsigned.
+        if ord(value) < 0 or ord(value) > 255:
+            raise ValueError(
+                f'Char value out of range: {ord(value)} ({value})')
         super().__init__(value)
 
     def __eq__(self, rhs: object) -> bool:
@@ -25,7 +34,7 @@ class Char(BasicType):
 
 class Double(BasicType):
     def __init__(self, value: float):
-        if value < 1.7e-308 or value > 1.7e+308:
+        if value < DOUBLE_MIN or value > DOUBLE_MAX:
             raise ValueError(f'Double value out of range: {value}')
         super().__init__(value)
 
@@ -37,7 +46,7 @@ class Double(BasicType):
 
 class Float(BasicType):
     def __init__(self, value: float):
-        if value < 1.23-38 or value > 3.4e+38:
+        if value < FLOAT_MIN or value > FLOAT_MAX:
             raise ValueError(f'Float value out of range: {value}')
         super().__init__(value)
 
@@ -143,7 +152,7 @@ class UInt64(BasicType):
         return self.value == rhs.value
 
 
-@dataclasses.dataclass
+@dataclass
 class DataFormat:
     format: str
     size: int

@@ -714,6 +714,9 @@ class ReplayFilter(fil.Filter):
         }
 
     def _save_data(self):
+        if self.data['participants']['numActiveCars'] is None:
+            logging.info("No participants data: can't write file.")
+            return
         logging.info('Session filtering complete.')
         logging.debug(f'Session filter time: \
 {self.session_end_time - self.session_start_time}')

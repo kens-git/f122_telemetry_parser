@@ -6,7 +6,7 @@ from pathlib import Path
 import time
 from typing import Any, cast, Dict, List
 from constants.constants import (
-    GRID_COUNT, EventStringCode, PacketId, TRACK_NAMES, SESSION_TEXT)
+    GRID_SIZE, EventStringCode, PacketId, TRACK_NAMES, SESSION_TEXT)
 from filters.Filter import Filter
 from packets.packets import (
     CarDamagePacket, CarSetupsPacket, CarStatusPacket, CarTelemetryPacket,
@@ -555,7 +555,7 @@ class ReplayFilter(Filter):
                     'worldPositionX': [],
                     'worldPositionY': [],
                     'yaw': []
-                } for _ in range(GRID_COUNT)],
+                } for _ in range(GRID_SIZE)],
             'session': {
                 'sessionUID': [],
                 'weather': [],
@@ -613,7 +613,7 @@ class ReplayFilter(Filter):
                     'pitLaneTimeInLaneInMS': [],
                     'pitStopTimerInMS': [],
                     'pitStopShouldServePen': [],
-                } for _ in range(GRID_COUNT)],
+                } for _ in range(GRID_SIZE)],
             'event': {
                 EventStringCode.SESSION_START.value: None,
                 EventStringCode.SESSION_END.value: None,
@@ -643,7 +643,7 @@ class ReplayFilter(Filter):
                             'nationality': None,
                             'name': None,
                             'yourTelemetry': None,
-                        } for _ in range(GRID_COUNT)]
+                        } for _ in range(GRID_SIZE)]
                 },
             'car_setups':
                 [{
@@ -669,7 +669,7 @@ class ReplayFilter(Filter):
                     'frontRightTyrePressure': [],
                     'ballast': [],
                     'fuelLoad': [],
-                } for _ in range(GRID_COUNT)],
+                } for _ in range(GRID_SIZE)],
             'car_telemetry':
                 [{
                     'speed': [],
@@ -688,7 +688,7 @@ class ReplayFilter(Filter):
                     'engineTemperature': [],
                     'tiresPressure': [],
                     'surfaceType': [],
-                } for _ in range(GRID_COUNT)],
+                } for _ in range(GRID_SIZE)],
             'car_status':
                 [{
                     'tractionControl': [],
@@ -714,7 +714,7 @@ class ReplayFilter(Filter):
                     'ersHarvestedThisLapMGUH': [],
                     'ersDeployedThisLap': [],
                     'networkPaused': [],
-                } for _ in range(GRID_COUNT)],
+                } for _ in range(GRID_SIZE)],
             'car_damage':
                 [{
                     'tyresWear': [],
@@ -738,7 +738,7 @@ class ReplayFilter(Filter):
                     'engineTCWear': [],
                     'engineBlown': [],
                     'engineSeized': [],
-                } for _ in range(GRID_COUNT)],
+                } for _ in range(GRID_SIZE)],
         }
 
     def _save_data(self):
@@ -756,6 +756,7 @@ class ReplayFilter(Filter):
             self.data['session']['sessionType'][0][1]][0:12].replace(
                 ' ', '_').replace('-', '_')
         session_uid = str(self.data['session']['sessionUID'][0][1])[-8:]
+        # TODO: ReplayServer version # in filename (e.g., _v1.json)
         filename = f'{track_name}_{session_type}_{session_uid}.json'
         filepath = Path('saved_data')
         filepath.mkdir(exist_ok=True)

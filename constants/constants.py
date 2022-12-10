@@ -8,7 +8,7 @@ PACKET_HEADER_LENGTH: Final[int] = 24
 PACKET_HEADER_ID_INDEX: Final[int] = 5
 """The byte index of the packet id."""
 
-GRID_COUNT: Final[int] = 22
+GRID_SIZE: Final[int] = 22
 """The number of grid positions."""
 
 NULL_DRIVER: Final[int] = 255

@@ -1,6 +1,6 @@
 from struct import pack
 from typing import get_origin, Type
-from constants.constants import GRID_COUNT, PacketId
+from constants.constants import GRID_SIZE, PacketId
 from custom_types.generic import T
 
 
@@ -35,7 +35,7 @@ def create_car_corner_data(format: str) -> bytes:
 
 def create_motion_data() -> bytes:
     packet = create_packet_header_data(PacketId.MOTION)
-    for _ in range(GRID_COUNT):
+    for _ in range(GRID_SIZE):
         packet += pack('<f', 1.0)
         packet += pack('<f', 2.0)
         packet += pack('<f', 3.0)

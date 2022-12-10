@@ -4,7 +4,7 @@ import utilities.data as du
 
 
 def get_packet_id(packet_data: bytes) -> int:
-    """Returns the id of a packet from the given data.
+    """Returns the id of a packet from the given packet data.
 
     Args:
         packet_data: The raw bytes of the packet.

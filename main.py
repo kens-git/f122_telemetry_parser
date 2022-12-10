@@ -14,10 +14,7 @@ DEFAULT_PORT: Final[int] = 20777
 
 MAIN_THREAD_SLEEP_TIME_MS: Final[float] = 0.016
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='[%(asctime)s] %(message)s',
-    datefmt='%H:%M:%S')
+logging.basicConfig(level=logging.INFO, format='%(message)s')
 
 FILTERS: Dict[str, Tuple[str, Type[Filter]]] = {
     'debug': ('Logs packet ids to the console for debugging.', DebugFilter),

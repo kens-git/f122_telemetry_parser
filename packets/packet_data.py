@@ -1,18 +1,17 @@
 from ctypes import (
-    c_double, c_float, c_int8, c_int16, c_uint8, c_uint16, c_uint32,
-    LittleEndianStructure)
-from custom_types.game import CarCornerData, Name, TyreStintData
+    c_double, c_float, c_int8, c_int16, c_uint8, c_uint16, c_uint32)
+from custom_types.game import F1PacketStructure, Name
 
 """This module contains dataclasses for data types contained in
 the packets.
 """
 
 
-class CarDamageData(LittleEndianStructure):
+class CarDamageData(F1PacketStructure):
     _fields_ = [
-        ('tyresWear', CarCornerData[c_float]),
-        ('tyresDamage', CarCornerData[c_uint8]),
-        ('brakesDamage', CarCornerData[c_uint8]),
+        ('tyresWear', c_float * 4),
+        ('tyresDamage', c_uint8 * 4),
+        ('brakesDamage', c_uint8 * 4),
         ('frontLeftWingDamage', c_uint8),
         ('frontRightWingDamage', c_uint8),
         ('rearWingDamage', c_uint8),
@@ -34,7 +33,7 @@ class CarDamageData(LittleEndianStructure):
     ]
 
 
-class CarSetupsData(LittleEndianStructure):
+class CarSetupsData(F1PacketStructure):
     _fields_ = [
         ('frontWing', c_uint8),
         ('rearWing', c_uint8),
@@ -61,7 +60,7 @@ class CarSetupsData(LittleEndianStructure):
     ]
 
 
-class CarStatusData(LittleEndianStructure):
+class CarStatusData(F1PacketStructure):
     _fields_ = [
         ('tractionControl', c_uint8),
         ('antiLockBrakes', c_uint8),
@@ -89,7 +88,7 @@ class CarStatusData(LittleEndianStructure):
     ]
 
 
-class CarTelemetryData(LittleEndianStructure):
+class CarTelemetryData(F1PacketStructure):
     _fields_ = [
         ('speed', c_uint16),
         ('throttle', c_float),
@@ -101,16 +100,16 @@ class CarTelemetryData(LittleEndianStructure):
         ('drs', c_uint8),
         ('revLightsPercent', c_uint8),
         ('revLightsBitValue', c_uint16),
-        ('brakesTemperature', CarCornerData[c_uint16]),
-        ('tiresSurfaceTemperature', CarCornerData[c_uint8]),
-        ('tiresInnerTemperature', CarCornerData[c_uint8]),
+        ('brakesTemperature', c_uint16 * 4),
+        ('tiresSurfaceTemperature', c_uint8 * 4),
+        ('tiresInnerTemperature', c_uint8 * 4),
         ('engineTemperature', c_uint16),
-        ('tiresPressure', CarCornerData[c_float]),
-        ('surfaceType', CarCornerData[c_uint8]),
+        ('tiresPressure', c_float * 4),
+        ('surfaceType', c_uint8 * 4),
     ]
 
 
-class FinalClassificationData(LittleEndianStructure):
+class FinalClassificationData(F1PacketStructure):
     _fields_ = [
         ('position', c_uint8),
         ('numLaps', c_uint8),
@@ -123,13 +122,13 @@ class FinalClassificationData(LittleEndianStructure):
         ('penaltiesTime', c_uint8),
         ('numPenalties', c_uint8),
         ('numTyreStints', c_uint8),
-        ('tyreStintsActual', TyreStintData[c_uint8]),
-        ('tyreStintsVisual', TyreStintData[c_uint8]),
-        ('tyreStintEndLaps', TyreStintData[c_uint8]),
+        ('tyreStintsActual', c_uint8 * 8),
+        ('tyreStintsVisual', c_uint8 * 8),
+        ('tyreStintEndLaps', c_uint8 * 8),
     ]
 
 
-class LapDataData(LittleEndianStructure):
+class LapDataData(F1PacketStructure):
     _fields_ = [
         ('lastLapTimeInMS', c_uint32),
         ('currentLapTimeInMS', c_uint32),
@@ -158,7 +157,7 @@ class LapDataData(LittleEndianStructure):
     ]
 
 
-class LapHistoryData(LittleEndianStructure):
+class LapHistoryData(F1PacketStructure):
     _fields_ = [
         ('lapTimeInMS', c_uint32),
         ('sector1TimeInMS', c_uint16),
@@ -168,7 +167,7 @@ class LapHistoryData(LittleEndianStructure):
     ]
 
 
-class LobbyInfoData(LittleEndianStructure):
+class LobbyInfoData(F1PacketStructure):
     _fields_ = [
         ('aiControlled', c_uint8),
         ('teamId', c_uint8),
@@ -179,14 +178,14 @@ class LobbyInfoData(LittleEndianStructure):
     ]
 
 
-class MarshalZone(LittleEndianStructure):
+class MarshalZone(F1PacketStructure):
     _fields_ = [
         ('zoneStart', c_float),
         ('zoneFlag', c_int8),
     ]
 
 
-class MotionData(LittleEndianStructure):
+class CarMotionData(F1PacketStructure):
     _fields_ = [
         ('worldPositionX', c_float),
         ('worldPositionY', c_float),
@@ -209,7 +208,7 @@ class MotionData(LittleEndianStructure):
     ]
 
 
-class ParticipantsData(LittleEndianStructure):
+class ParticipantsData(F1PacketStructure):
     _fields_ = [
         ('aiControlled', c_uint8),
         ('driverId', c_uint8),
@@ -223,7 +222,7 @@ class ParticipantsData(LittleEndianStructure):
     ]
 
 
-class TyreStintHistoryData(LittleEndianStructure):
+class TyreStintHistoryData(F1PacketStructure):
     _fields_ = [
         ('endLap', c_uint8),
         ('tyreActualCompound', c_uint8),
@@ -231,7 +230,7 @@ class TyreStintHistoryData(LittleEndianStructure):
     ]
 
 
-class WeatherForecastSample(LittleEndianStructure):
+class WeatherForecastSample(F1PacketStructure):
     _fields_ = [
         ('sessionType', c_uint8),
         ('timeOffset', c_uint8),

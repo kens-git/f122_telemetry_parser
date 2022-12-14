@@ -1,24 +1,30 @@
-from ctypes import c_char, LittleEndianStructure
+from ctypes import c_char, c_uint8, LittleEndianStructure
 from typing import Generic
 from custom_types.generic import CT
 
 
-EventCode = c_char * 4
+class F1PacketStructure(LittleEndianStructure):
+    _pack_ = 1
+
+
+EventCode = c_uint8 * 4
 """Defines a 4 character event code."""
 
 
 Name = c_char * 48
-"""Defines a type for names contained in the packets."""
+"""Defines a type for names contained in the packets (UTF-8)."""
 
 
-TyreStintData = [CT, CT, CT, CT, CT, CT, CT, CT]
+# TODO: make work
+# TyreStintData: Array[CT * 8]
 """Stores data for up to 8 tire stints."""
 
 
-class CarCornerData(LittleEndianStructure, Generic[CT]):
-    _fields_ = [
-        ('rearLeft', CT),
-        ('rearRight', CT),
-        ('frontLeft', CT),
-        ('frontRight', CT),
-    ]
+# TODO: make work
+# class CarCornerData(LittleEndianStructure, Generic[CT]):
+#     _fields_ = [
+#         ('rearLeft', CT),
+#         ('rearRight', CT),
+#         ('frontLeft', CT),
+#         ('frontRight', CT),
+#     ]

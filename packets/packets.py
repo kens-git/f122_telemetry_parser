@@ -1,13 +1,12 @@
 from ctypes import (
-    c_float, c_int8, c_uint8, c_uint16, c_uint32, c_uint64,
-    LittleEndianStructure)
+    c_float, c_int8, c_uint8, c_uint16, c_uint32, c_uint64, Union)
 from typing import Dict, Final, Type
-from constants.constants import EventStringCode, GRID_SIZE, PacketId
-from custom_types.game import CarCornerData, EventCode
+from constants.constants import GRID_SIZE, PacketId
+from custom_types.game import EventCode, F1PacketStructure
 from packets.packet_data import (
-    CarDamageData, CarSetupsData, CarStatusData, CarTelemetryData,
-    FinalClassificationData, LapDataData, LapHistoryData, LobbyInfoData,
-    MarshalZone, MotionData, ParticipantsData, TyreStintHistoryData,
+    CarDamageData, CarMotionData, CarSetupsData, CarStatusData,
+    CarTelemetryData, FinalClassificationData, LapDataData, LapHistoryData,
+    LobbyInfoData, MarshalZone, ParticipantsData, TyreStintHistoryData,
     WeatherForecastSample)
 
 """This module contains classes that correspond with the packets
@@ -15,7 +14,7 @@ output by the game.
 """
 
 
-class Packet(LittleEndianStructure):
+class Packet(F1PacketStructure):
     _fields_ = [
         ('packetFormat', c_uint16),
         ('gameMajorVersion', c_uint8),
@@ -57,38 +56,32 @@ class CarTelemetryPacket(Packet):
     ]
 
 
-class EventPacket(Packet):
-    _fields_ = [
-        ('eventStringCode', EventCode),
-    ]
-
-
-class FastestLapPacket(EventPacket):
+class FastestLap(F1PacketStructure):
     _fields_ = [
         ('vehicleIdx', c_uint8),
         ('lapTime', c_float),
     ]
 
 
-class RetirementPacket(EventPacket):
+class Retirement(F1PacketStructure):
     _fields_ = [
         ('vehicleIdx', c_uint8),
     ]
 
 
-class TeamMateInPitsPacket(EventPacket):
+class TeamMateInPits(F1PacketStructure):
     _fields_ = [
         ('vehicleIdx', c_uint8),
     ]
 
 
-class RaceWinnerPacket(EventPacket):
+class RaceWinner(F1PacketStructure):
     _fields_ = [
         ('vehicleIdx', c_uint8),
     ]
 
 
-class PenaltyPacket(EventPacket):
+class Penalty(F1PacketStructure):
     _fields_ = [
         ('penaltyType', c_uint8),
         ('infringementType', c_uint8),
@@ -100,7 +93,7 @@ class PenaltyPacket(EventPacket):
     ]
 
 
-class SpeedTrapPacket(EventPacket):
+class SpeedTrap(F1PacketStructure):
     _fields_ = [
         ('vehicleIdx', c_uint8),
         ('speed', c_float),
@@ -111,34 +104,57 @@ class SpeedTrapPacket(EventPacket):
     ]
 
 
-class StartLightsPacket(EventPacket):
+class StartLights(F1PacketStructure):
     _fields_ = [
         ('numLights', c_uint8),
     ]
 
 
-class DriveThroughPenaltyServedPacket(EventPacket):
+class DriveThroughPenaltyServed(F1PacketStructure):
     _fields_ = [
         ('vehicleIdx', c_uint8),
     ]
 
 
-class StopGoPenaltyServedPacket(EventPacket):
+class StopGoPenaltyServed(F1PacketStructure):
     _fields_ = [
         ('vehicleIdx', c_uint8),
     ]
 
 
-class FlashbackPacket(EventPacket):
+class Flashback(F1PacketStructure):
     _fields_ = [
         ('flashbackFrameIdentifier', c_uint32),
         ('flashbackSessionTime', c_float),
     ]
 
 
-class ButtonsPacket(EventPacket):
+class Buttons(F1PacketStructure):
     _fields_ = [
         ('buttonStatus', c_uint32),
+    ]
+
+
+class EventDataDetails(Union):
+    _fields_ = [
+        ("FastestLap", FastestLap),
+        ("Retirement", Retirement),
+        ("TeamMangeInPits", TeamMateInPits),
+        ("RaceWinner", RaceWinner),
+        ("Penalty", Penalty),
+        ("SpeedTrap", SpeedTrap),
+        ("StartLights", StartLights),
+        ("DriveThroughPenaltyServed", DriveThroughPenaltyServed),
+        ("StopGoPenaltyServed", StopGoPenaltyServed),
+        ("Flashback", Flashback),
+        ("Buttons", Buttons),
+    ]
+
+
+class EventPacket(Packet):
+    _fields_ = [
+        ('eventStringCode', EventCode),
+        ('eventDetails', EventDataDetails)
     ]
 
 
@@ -166,12 +182,12 @@ class LobbyInfoPacket(Packet):
 
 class MotionPacket(Packet):
     _fields_ = [
-        ('carMotionData', MotionData * GRID_SIZE),
-        ('suspensionPosition', CarCornerData[c_float]),
-        ('suspensionVelocity', CarCornerData[c_float]),
-        ('suspensionAcceleration', CarCornerData[c_float]),
-        ('wheelSpeed', CarCornerData[c_float]),
-        ('wheelSlip', CarCornerData[c_float]),
+        ('carMotionData', CarMotionData * GRID_SIZE),
+        ('suspensionPosition', c_float * 4),
+        ('suspensionVelocity', c_float * 4),
+        ('suspensionAcceleration', c_float * 4),
+        ('wheelSpeed', c_float * 4),
+        ('wheelSlip', c_float * 4),
         ('localVelocityX', c_float),
         ('localVelocityY', c_float),
         ('localVelocityZ', c_float),
@@ -267,26 +283,3 @@ PACKET_TYPE: Final[Dict[int, Type[Packet]]] = {
     PacketId.CAR_DAMAGE.value: CarDamagePacket,
     PacketId.SESSION_HISTORY.value: SessionHistoryPacket,
 }
-
-
-EVENT_DETAILS_TYPE: Final[Dict[str, Type[EventPacket]]] = {
-    EventStringCode.SESSION_START.value: EventPacket,
-    EventStringCode.SESSION_END.value: EventPacket,
-    EventStringCode.FASTEST_LAP.value: FastestLapPacket,
-    EventStringCode.RETIREMENT.value: RetirementPacket,
-    EventStringCode.DRS_ENABLED.value: EventPacket,
-    EventStringCode.DRS_DISABLED.value: EventPacket,
-    EventStringCode.TEAM_MATE_IN_PITS.value: TeamMateInPitsPacket,
-    EventStringCode.CHEQUERED_FLAG.value: EventPacket,
-    EventStringCode.RACE_WINNER.value: RaceWinnerPacket,
-    EventStringCode.PENALTY.value: PenaltyPacket,
-    EventStringCode.SPEED_TRAP.value: SpeedTrapPacket,
-    EventStringCode.START_LIGHTS.value: StartLightsPacket,
-    EventStringCode.LIGHTS_OUT.value: EventPacket,
-    EventStringCode.DRIVE_THROUGH_SERVED.value:
-        DriveThroughPenaltyServedPacket,
-    EventStringCode.STOP_GO_SERVED.value: StopGoPenaltyServedPacket,
-    EventStringCode.FLASHBACK.value: FlashbackPacket,
-    EventStringCode.BUTTON.value: ButtonsPacket,
-}
-"""Returns the packet type associated with an event string code."""

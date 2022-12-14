@@ -4,7 +4,6 @@ from typing import cast, Dict, Optional
 from constants.constants import (
     DRIVER_NAMES, EventStringCode, NULL_DRIVER, PenaltyId, SESSION_TEXT,
     TRACK_NAMES, WEATHER_TEXT)
-from custom_types.game import GridData
 from filters.Filter import Filter
 from packets.packet_data import ParticipantsData
 from packets.packets import (

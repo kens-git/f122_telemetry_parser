@@ -1,6 +1,6 @@
 import struct
 from typing import Tuple, Type
-from custom_types.basic import BASIC_TYPE_FORMAT, BasicType, Char
+from custom_types.basic import BASIC_TYPE_FORMAT, BasicType
 
 
 def unpack(data: bytes, start: int,
@@ -21,7 +21,8 @@ def unpack(data: bytes, start: int,
                      data[start:start + data_format.size])[0])
 
 
-def to_string(chars: Tuple[Char, ...]) -> str:
+# TODO: chars arg type
+def to_string(chars: Tuple[int]) -> str:
     """Converts a tuple of Chars to a string by decoding the chars as utf-8.
 
     Args:
@@ -30,5 +31,5 @@ def to_string(chars: Tuple[Char, ...]) -> str:
     Returns:
         A plain string containing the non-null characters of the chars.
     """
-
-    return (b''.join(x.value for x in chars)).decode('utf-8').rstrip('\u0000')
+    return bytes(chars).decode('utf-8')
+    #return (b''.join(x for x in chars)).decode('utf-8').rstrip('\u0000')

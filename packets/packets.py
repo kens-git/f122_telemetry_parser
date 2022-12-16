@@ -1,13 +1,12 @@
-from ctypes import (
-    c_float, c_int8, c_uint8, c_uint16, c_uint32, c_uint64, Union)
+from ctypes import (c_float, c_int8, c_uint8, c_uint16, c_uint32, c_uint64)
 from typing import Dict, Final, Type
 from constants.constants import GRID_SIZE, PacketId
 from custom_types.game import EventCode, F1PacketStructure
 from packets.packet_data import (
     CarDamageData, CarMotionData, CarSetupsData, CarStatusData,
-    CarTelemetryData, FinalClassificationData, LapDataData, LapHistoryData,
-    LobbyInfoData, MarshalZone, ParticipantsData, TyreStintHistoryData,
-    WeatherForecastSample)
+    CarTelemetryData, EventDataDetails, FinalClassificationData,
+    LapDataData, LapHistoryData, LobbyInfoData, MarshalZone, ParticipantsData,
+    TyreStintHistoryData, WeatherForecastSample)
 
 """This module contains classes that correspond with the packets
 output by the game.
@@ -53,101 +52,6 @@ class CarTelemetryPacket(Packet):
         ('mfdPanelIndex', c_uint8),
         ('mfdPanelIndexSecondaryPlayer', c_uint8),
         ('suggestedGear', c_int8),
-    ]
-
-
-class FastestLap(F1PacketStructure):
-    _fields_ = [
-        ('vehicleIdx', c_uint8),
-        ('lapTime', c_float),
-    ]
-
-
-class Retirement(F1PacketStructure):
-    _fields_ = [
-        ('vehicleIdx', c_uint8),
-    ]
-
-
-class TeamMateInPits(F1PacketStructure):
-    _fields_ = [
-        ('vehicleIdx', c_uint8),
-    ]
-
-
-class RaceWinner(F1PacketStructure):
-    _fields_ = [
-        ('vehicleIdx', c_uint8),
-    ]
-
-
-class Penalty(F1PacketStructure):
-    _fields_ = [
-        ('penaltyType', c_uint8),
-        ('infringementType', c_uint8),
-        ('vehicleIdx', c_uint8),
-        ('otherVehicleIdx', c_uint8),
-        ('time', c_uint8),
-        ('lapNum', c_uint8),
-        ('placesGained', c_uint8),
-    ]
-
-
-class SpeedTrap(F1PacketStructure):
-    _fields_ = [
-        ('vehicleIdx', c_uint8),
-        ('speed', c_float),
-        ('isOverallFastestInSession', c_uint8),
-        ('isDriverFastestInSession', c_uint8),
-        ('fastestVehicleIdxInSession', c_uint8),
-        ('fastestSpeedInSession', c_float),
-    ]
-
-
-class StartLights(F1PacketStructure):
-    _fields_ = [
-        ('numLights', c_uint8),
-    ]
-
-
-class DriveThroughPenaltyServed(F1PacketStructure):
-    _fields_ = [
-        ('vehicleIdx', c_uint8),
-    ]
-
-
-class StopGoPenaltyServed(F1PacketStructure):
-    _fields_ = [
-        ('vehicleIdx', c_uint8),
-    ]
-
-
-class Flashback(F1PacketStructure):
-    _fields_ = [
-        ('flashbackFrameIdentifier', c_uint32),
-        ('flashbackSessionTime', c_float),
-    ]
-
-
-class Buttons(F1PacketStructure):
-    _fields_ = [
-        ('buttonStatus', c_uint32),
-    ]
-
-
-class EventDataDetails(Union):
-    _fields_ = [
-        ("FastestLap", FastestLap),
-        ("Retirement", Retirement),
-        ("TeamMangeInPits", TeamMateInPits),
-        ("RaceWinner", RaceWinner),
-        ("Penalty", Penalty),
-        ("SpeedTrap", SpeedTrap),
-        ("StartLights", StartLights),
-        ("DriveThroughPenaltyServed", DriveThroughPenaltyServed),
-        ("StopGoPenaltyServed", StopGoPenaltyServed),
-        ("Flashback", Flashback),
-        ("Buttons", Buttons),
     ]
 
 

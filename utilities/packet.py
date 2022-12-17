@@ -1,6 +1,5 @@
+from struct import unpack
 from constants.constants import PACKET_HEADER_ID_INDEX
-from custom_types.basic import UInt8
-import utilities.data as du
 
 
 def get_packet_id(packet_data: bytes) -> int:
@@ -13,4 +12,6 @@ def get_packet_id(packet_data: bytes) -> int:
         The packet id.
     """
 
-    return int(du.unpack(packet_data, PACKET_HEADER_ID_INDEX, UInt8).value)
+    return unpack(
+        '<B',
+        packet_data[PACKET_HEADER_ID_INDEX:PACKET_HEADER_ID_INDEX + 1])[0]

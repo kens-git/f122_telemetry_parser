@@ -1,9 +1,9 @@
-import ctypes
+from ctypes import Array
 import datetime
 import logging
 from typing import cast, Dict, Optional
 from constants.constants import (
-    DRIVER_NAMES, EventStringCode, NULL_DRIVER, PenaltyId, SESSION_TEXT,
+    DRIVER_NAMES, EventStringCode, NULL_BYTE_VALUE, PenaltyId, SESSION_TEXT,
     TRACK_NAMES, WEATHER_TEXT)
 from filters.Filter import Filter
 from packets.packet_data import (
@@ -204,8 +204,7 @@ class LogFilter(Filter):
     def __init__(self):
         self.data = {}
         self.session_displayed = False
-        self.participants: Optional[ctypes.Array[ParticipantsData]] = None
-        self.numActiveCars: int = 0
+        self.participants: Optional[Array[ParticipantsData]] = None
 
     def filter(self, packet: Packet):
         packet_id = packet.packetId
@@ -217,7 +216,7 @@ class LogFilter(Filter):
             self._filter_participants(cast(ParticipantsPacket, packet))
 
     def _get_driver_name(self, vehicle_index: int):
-        participant = cast(ctypes.Array[ParticipantsData],
+        participant = cast(Array[ParticipantsData],
                            self.participants)[vehicle_index]
         return get_driver_name(
             participant.driverId, du.to_string(participant.name))
@@ -280,7 +279,7 @@ class LogFilter(Filter):
                 return
             other_vehicle = data.otherVehicleIdx
             second_driver = (self._get_driver_name(other_vehicle)
-                             if other_vehicle != NULL_DRIVER else None)
+                             if other_vehicle != NULL_BYTE_VALUE else None)
             time = data.time if data.time != 255 else None  # TODO: magic number
             p_string = create_penalty_string(
                 data.penaltyType, data.infringementType,
@@ -317,13 +316,10 @@ class LogFilter(Filter):
                 packet.sessionTime, 'Flashback initiated.')
 
     def _filter_participants(self, packet: ParticipantsPacket):
-        # TODO: is any of this even used? Same for _reset?
         if self.participants is not None:
             return
         self.participants = packet.participants
-        self.numActiveCars = packet.numActiveCars
 
     def _reset(self):
-        self.numActiveCars = 0
         self.participants = None
         self.session_displayed = False

@@ -1,7 +1,5 @@
 from struct import pack
-from typing import get_origin, Type
 from constants.constants import GRID_SIZE, PacketId
-from custom_types.generic import T
 
 
 def create_packet_header_data(id: PacketId) -> bytes:

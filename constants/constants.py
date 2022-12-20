@@ -12,7 +12,7 @@ GRID_SIZE: Final[int] = 22
 """The number of grid positions."""
 
 NULL_BYTE_VALUE: Final[int] = 255
-"""Value of null packet data for single-byte types."""
+"""Value of null packet data for unsigned, single-byte types."""
 
 
 class EventStringCode(Enum):

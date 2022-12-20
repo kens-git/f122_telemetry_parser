@@ -8,11 +8,11 @@ PACKET_HEADER_LENGTH: Final[int] = 24
 PACKET_HEADER_ID_INDEX: Final[int] = 5
 """The byte index of the packet id."""
 
-GRID_COUNT: Final[int] = 22
+GRID_SIZE: Final[int] = 22
 """The number of grid positions."""
 
-NULL_DRIVER: Final[int] = 255
-"""Id for a driver with no associated data in a packet."""
+NULL_BYTE_VALUE: Final[int] = 255
+"""Value of null packet data for unsigned, single-byte types."""
 
 
 class EventStringCode(Enum):

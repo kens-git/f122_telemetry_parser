@@ -1,9 +1,8 @@
 from typing import cast, Tuple
 from unittest import TestCase
 from constants.constants import EventStringCode, PacketId
-from custom_types.basic import BasicType
 from packets.packets import (
-    EventPacket, FastestLapPacket, MotionPacket, Packet)
+    EventPacket, MotionPacket, Packet)
 import tests.packet_utilities as pu
 import utilities.data as du
 from utilities.parse import parse_packet

@@ -12,6 +12,6 @@ class DebugFilter(Filter):
     """
 
     def filter(self, packet: Packet):
-        """Logs the packetId to the console."""
+        """Logs the packet id to the console."""
 
         logging.info(packet.packetId)

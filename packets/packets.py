@@ -1,13 +1,11 @@
-from abc import ABC
-from dataclasses import dataclass
-from typing import Dict, Final, Tuple, Type
-from constants.constants import EventStringCode, PacketId
-from custom_types.basic import Float, Int8, UInt8, UInt16, UInt32, UInt64
-from custom_types.game import CarCornerData, EventCode, GridData
+from ctypes import (c_float, c_int8, c_uint8, c_uint16, c_uint32, c_uint64)
+from typing import Dict, Final, Type
+from constants.constants import GRID_SIZE, PacketId
+from custom_types.game import EventCode, F1PacketStructure
 from packets.packet_data import (
-    CarDamageData, CarSetupsData, CarStatusData,
-    CarTelemetryData, FinalClassificationData, LapDataData, LapHistoryData,
-    LobbyInfoData, MarshalZone, MotionData, ParticipantsData,
+    CarDamageData, CarMotionData, CarSetupsData, CarStatusData,
+    CarTelemetryData, EventDataDetails, FinalClassificationData,
+    LapDataData, LapHistoryData, LobbyInfoData, MarshalZone, ParticipantsData,
     TyreStintHistoryData, WeatherForecastSample)
 
 """This module contains classes that correspond with the packets
@@ -15,294 +13,164 @@ output by the game.
 """
 
 
-@dataclass
-class Packet(ABC):
-    packetFormat: UInt16
-    gameMajorVersion: UInt8
-    gameMinorVersion: UInt8
-    packetVersion: UInt8
-    packetId: UInt8
-    sessionUID: UInt64
-    sessionTime: Float
-    frameIdentifier: UInt32
-    playerCarIndex: UInt8
-    secondaryPlayerCarIndex: UInt8
+class Packet(F1PacketStructure):
+    _fields_ = [
+        ('packetFormat', c_uint16),
+        ('gameMajorVersion', c_uint8),
+        ('gameMinorVersion', c_uint8),
+        ('packetVersion', c_uint8),
+        ('packetId', c_uint8),
+        ('sessionUID', c_uint64),
+        ('sessionTime', c_float),
+        ('frameIdentifier', c_uint32),
+        ('playerCarIndex', c_uint8),
+        ('secondaryPlayerCarIndex', c_uint8),
+    ]
 
 
-@dataclass
 class CarDamagePacket(Packet):
-    carDamageData: GridData[CarDamageData]
+    _fields_ = [
+        ('carDamageData', CarDamageData * GRID_SIZE),
+    ]
 
 
-@dataclass
 class CarSetupsPacket(Packet):
-    carSetups: GridData[CarSetupsData]
+    _fields_ = [
+        ('carSetups', CarSetupsData * GRID_SIZE),
+    ]
 
 
-@dataclass
 class CarStatusPacket(Packet):
-    carStatusData: GridData[CarStatusData]
+    _fields_ = [
+        ('carStatusData', CarStatusData * GRID_SIZE),
+    ]
 
 
-@dataclass
 class CarTelemetryPacket(Packet):
-    carTelemetryData: GridData[CarTelemetryData]
-    mfdPanelIndex: UInt8
-    mfdPanelIndexSecondaryPlayer: UInt8
-    suggestedGear: Int8
+    _fields_ = [
+        ('carTelemetryData', CarTelemetryData * GRID_SIZE),
+        ('mfdPanelIndex', c_uint8),
+        ('mfdPanelIndexSecondaryPlayer', c_uint8),
+        ('suggestedGear', c_int8),
+    ]
 
 
-@dataclass
 class EventPacket(Packet):
-    eventStringCode: EventCode
+    _fields_ = [
+        ('eventStringCode', EventCode),
+        ('eventDetails', EventDataDetails)
+    ]
 
 
-@dataclass
-class FastestLapPacket(EventPacket):
-    vehicleIdx: UInt8
-    lapTime: Float
-
-
-@dataclass
-class RetirementPacket(EventPacket):
-    vehicleIdx: UInt8
-
-
-@dataclass
-class TeamMateInPitsPacket(EventPacket):
-    vehicleIdx: UInt8
-
-
-@dataclass
-class RaceWinnerPacket(EventPacket):
-    vehicleIdx: UInt8
-
-
-@dataclass
-class PenaltyPacket(EventPacket):
-    penaltyType: UInt8
-    infringementType: UInt8
-    vehicleIdx: UInt8
-    otherVehicleIdx: UInt8
-    time: UInt8
-    lapNum: UInt8
-    placesGained: UInt8
-
-
-@dataclass
-class SpeedTrapPacket(EventPacket):
-    vehicleIdx: UInt8
-    speed: Float
-    isOverallFastestInSession: UInt8
-    isDriverFastestInSession: UInt8
-    fastestVehicleIdxInSession: UInt8
-    fastestSpeedInSession: Float
-
-
-@dataclass
-class StartLightsPacket(EventPacket):
-    numLights: UInt8
-
-
-@dataclass
-class DriveThroughPenaltyServedPacket(EventPacket):
-    vehicleIdx: UInt8
-
-
-@dataclass
-class StopGoPenaltyServedPacket(EventPacket):
-    vehicleIdx: UInt8
-
-
-@dataclass
-class FlashbackPacket(EventPacket):
-    flashbackFrameIdentifier: UInt32
-    flashbackSessionTime: Float
-
-
-@dataclass
-class ButtonsPacket(EventPacket):
-    buttonStatus: UInt32
-
-
-@dataclass
 class FinalClassificationPacket(Packet):
-    numCars: UInt8
-    classificationData: GridData[FinalClassificationData]
+    _fields_ = [
+        ('numCars', c_uint8),
+        ('classificationData', FinalClassificationData * GRID_SIZE),
+    ]
 
 
-@dataclass
 class LapDataPacket(Packet):
-    lapData: GridData[LapDataData]
-    timeTrialPBCarIdx: UInt8
-    timeTrialRivalCarIdx: UInt8
+    _fields_ = [
+        ('lapData', LapDataData * GRID_SIZE),
+        ('timeTrialPBCarIdx', c_uint8),
+        ('timeTrialRivalCarIdx', c_uint8),
+    ]
 
 
-@dataclass
 class LobbyInfoPacket(Packet):
-    numPlayers: UInt8
-    lobbyPlayers: GridData[LobbyInfoData]
+    _fields_ = [
+        ('numPlayers', c_uint8),
+        ('lobbyPlayers', LobbyInfoData * GRID_SIZE),
+    ]
 
 
-@dataclass
 class MotionPacket(Packet):
-    carMotionData: GridData[MotionData]
-    suspensionPosition: CarCornerData[Float]
-    suspensionVelocity: CarCornerData[Float]
-    suspensionAcceleration: CarCornerData[Float]
-    wheelSpeed: CarCornerData[Float]
-    wheelSlip: CarCornerData[Float]
-    localVelocityX: Float
-    localVelocityY: Float
-    localVelocityZ: Float
-    angularVelocityX: Float
-    angularVelocityY: Float
-    angularVelocityZ: Float
-    angularAccelerationX: Float
-    angularAccelerationY: Float
-    angularAccelerationZ: Float
-    frontWheelsAngle: Float
+    _fields_ = [
+        ('carMotionData', CarMotionData * GRID_SIZE),
+        ('suspensionPosition', c_float * 4),
+        ('suspensionVelocity', c_float * 4),
+        ('suspensionAcceleration', c_float * 4),
+        ('wheelSpeed', c_float * 4),
+        ('wheelSlip', c_float * 4),
+        ('localVelocityX', c_float),
+        ('localVelocityY', c_float),
+        ('localVelocityZ', c_float),
+        ('angularVelocityX', c_float),
+        ('angularVelocityY', c_float),
+        ('angularVelocityZ', c_float),
+        ('angularAccelerationX', c_float),
+        ('angularAccelerationY', c_float),
+        ('angularAccelerationZ', c_float),
+        ('frontWheelsAngle', c_float),
+    ]
 
 
-@dataclass
 class ParticipantsPacket(Packet):
-    numActiveCars: UInt8
-    participants: GridData[ParticipantsData]
+    _fields_ = [
+        ('numActiveCars', c_uint8),
+        ('participants', ParticipantsData * GRID_SIZE),
+    ]
 
 
-@dataclass
 class SessionHistoryPacket(Packet):
-    carIdx: UInt8
-    numLaps: UInt8
-    numTyreStints: UInt8
-    bestLapTimeLapNum: UInt8
-    bestSector1LapNum: UInt8
-    bestSector2LapNum: UInt8
-    bestSector3LapNum: UInt8
-    lapHistoryData: Tuple[
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData, LapHistoryData, LapHistoryData,
-        LapHistoryData,
-    ]
-    tyreStintHistoryData: Tuple[
-        TyreStintHistoryData, TyreStintHistoryData,
-        TyreStintHistoryData, TyreStintHistoryData,
-        TyreStintHistoryData, TyreStintHistoryData,
-        TyreStintHistoryData, TyreStintHistoryData,
+    _fields_ = [
+        ('carIdx', c_uint8),
+        ('numLaps', c_uint8),
+        ('numTyreStints', c_uint8),
+        ('bestLapTimeLapNum', c_uint8),
+        ('bestSector1LapNum', c_uint8),
+        ('bestSector2LapNum', c_uint8),
+        ('bestSector3LapNum', c_uint8),
+        ('lapHistoryData', LapHistoryData * 100),
+        ('tyreStintHistoryData', TyreStintHistoryData * 8),
     ]
 
 
-@dataclass
 class SessionPacket(Packet):
-    weather: UInt8
-    trackTemperature: Int8
-    airTemperature: Int8
-    totalLaps: UInt8
-    trackLength: UInt16
-    sessionType: UInt8
-    trackId: Int8
-    formula: UInt8
-    sessionTimeLeft: UInt16
-    sessionDuration: UInt16
-    pitSpeedLimit: UInt8
-    gamePaused: UInt8
-    isSpectating: UInt8
-    spectatorCarIndex: UInt8
-    sliProNativeSupport: UInt8
-    numMarshalZones: UInt8
-    marshalZones: Tuple[
-        MarshalZone, MarshalZone, MarshalZone, MarshalZone,
-        MarshalZone, MarshalZone, MarshalZone, MarshalZone,
-        MarshalZone, MarshalZone, MarshalZone, MarshalZone,
-        MarshalZone, MarshalZone, MarshalZone, MarshalZone,
-        MarshalZone, MarshalZone, MarshalZone, MarshalZone,
-        MarshalZone,
+    _fields_ = [
+        ('weather', c_uint8),
+        ('trackTemperature', c_int8),
+        ('airTemperature', c_int8),
+        ('totalLaps', c_uint8),
+        ('trackLength', c_uint16),
+        ('sessionType', c_uint8),
+        ('trackId', c_int8),
+        ('formula', c_uint8),
+        ('sessionTimeLeft', c_uint16),
+        ('sessionDuration', c_uint16),
+        ('pitSpeedLimit', c_uint8),
+        ('gamePaused', c_uint8),
+        ('isSpectating', c_uint8),
+        ('spectatorCarIndex', c_uint8),
+        ('sliProNativeSupport', c_uint8),
+        ('numMarshalZones', c_uint8),
+        ('marshalZones', MarshalZone * 21),
+        ('safetyCarStatus', c_uint8),
+        ('networkGame', c_uint8),
+        ('numWeatherForecastSamples', c_uint8),
+        ('weatherForecastSamples', WeatherForecastSample * 56),
+        ('forecastAccuracy', c_uint8),
+        ('aiDifficulty', c_uint8),
+        ('seasonLinkIdentifier', c_uint32),
+        ('weekendLinkIdentifier', c_uint32),
+        ('sessionLinkIdentifier', c_uint32),
+        ('pitStopWindowIdealLap', c_uint8),
+        ('pitStopWindowLatestLap', c_uint8),
+        ('pitStopRejoinPosition', c_uint8),
+        ('steeringAssist', c_uint8),
+        ('brakingAssist', c_uint8),
+        ('gearboxAssist', c_uint8),
+        ('pitAssist', c_uint8),
+        ('pitReleaseAssist', c_uint8),
+        ('ERSAssist', c_uint8),
+        ('DRSAssist', c_uint8),
+        ('dynamicRacingLine', c_uint8),
+        ('dynamicRacingLineType', c_uint8),
+        ('gameMode', c_uint8),
+        ('ruleSet', c_uint8),
+        ('timeOfDay', c_uint32),
+        ('sessionLength', c_uint8),
     ]
-    safetyCarStatus: UInt8
-    networkGame: UInt8
-    numWeatherForecastSamples: UInt8
-    weatherForecastSamples: Tuple[
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-        WeatherForecastSample, WeatherForecastSample,
-    ]
-    forecastAccuracy: UInt8
-    aiDifficulty: UInt8
-    seasonLinkIdentifier: UInt32
-    weekendLinkIdentifier: UInt32
-    sessionLinkIdentifier: UInt32
-    pitStopWindowIdealLap: UInt8
-    pitStopWindowLatestLap: UInt8
-    pitStopRejoinPosition: UInt8
-    steeringAssist: UInt8
-    brakingAssist: UInt8
-    gearboxAssist: UInt8
-    pitAssist: UInt8
-    pitReleaseAssist: UInt8
-    ERSAssist: UInt8
-    DRSAssist: UInt8
-    dynamicRacingLine: UInt8
-    dynamicRacingLineType: UInt8
-    gameMode: UInt8
-    ruleSet: UInt8
-    timeOfDay: UInt32
-    sessionLength: UInt8
 
 
 PACKET_TYPE: Final[Dict[int, Type[Packet]]] = {
@@ -319,26 +187,3 @@ PACKET_TYPE: Final[Dict[int, Type[Packet]]] = {
     PacketId.CAR_DAMAGE.value: CarDamagePacket,
     PacketId.SESSION_HISTORY.value: SessionHistoryPacket,
 }
-
-
-EVENT_DETAILS_TYPE: Final[Dict[str, Type[EventPacket]]] = {
-    EventStringCode.SESSION_START.value: EventPacket,
-    EventStringCode.SESSION_END.value: EventPacket,
-    EventStringCode.FASTEST_LAP.value: FastestLapPacket,
-    EventStringCode.RETIREMENT.value: RetirementPacket,
-    EventStringCode.DRS_ENABLED.value: EventPacket,
-    EventStringCode.DRS_DISABLED.value: EventPacket,
-    EventStringCode.TEAM_MATE_IN_PITS.value: TeamMateInPitsPacket,
-    EventStringCode.CHEQUERED_FLAG.value: EventPacket,
-    EventStringCode.RACE_WINNER.value: RaceWinnerPacket,
-    EventStringCode.PENALTY.value: PenaltyPacket,
-    EventStringCode.SPEED_TRAP.value: SpeedTrapPacket,
-    EventStringCode.START_LIGHTS.value: StartLightsPacket,
-    EventStringCode.LIGHTS_OUT.value: EventPacket,
-    EventStringCode.DRIVE_THROUGH_SERVED.value:
-        DriveThroughPenaltyServedPacket,
-    EventStringCode.STOP_GO_SERVED.value: StopGoPenaltyServedPacket,
-    EventStringCode.FLASHBACK.value: FlashbackPacket,
-    EventStringCode.BUTTON.value: ButtonsPacket,
-}
-"""Returns the packet type associated with a event string code."""

@@ -12,7 +12,7 @@ from parsers.UDPParser import UDPParser
 
 DEFAULT_PORT: Final[int] = 20777
 
-MAIN_THREAD_SLEEP_TIME_MS: Final[float] = 0.016
+MAIN_THREAD_SLEEP_TIME_S: Final[float] = 0.016
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     try:
         parser.start()
         while parser.is_running():
-            time.sleep(MAIN_THREAD_SLEEP_TIME_MS)
+            time.sleep(MAIN_THREAD_SLEEP_TIME_S)
     except KeyboardInterrupt:
         parser.stop()
         filter.cleanup()

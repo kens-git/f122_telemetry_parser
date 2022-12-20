@@ -756,7 +756,7 @@ class ReplayFilter(Filter):
             self.data['session']['sessionType'][0][1]][0:12].replace(
                 ' ', '_').replace('-', '_')
         session_uid = str(self.data['session']['sessionUID'][0][1])[-8:]
-        # TODO: ReplayServer version # in filename (e.g., _v1.json)
+        # TODO: ReplayFilter version # in filename (e.g., _v1.json)
         filename = f'{track_name}_{session_type}_{session_uid}.json'
         filepath = Path('saved_data')
         filepath.mkdir(exist_ok=True)

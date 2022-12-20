@@ -13,13 +13,3 @@ EventCode = c_uint8 * 4
 
 Name = c_char * 48
 """Defines a type for names contained in the packets (UTF-8)."""
-
-
-# TODO: make work
-# class CarCornerData(LittleEndianStructure, Generic[CT]):
-#     _fields_ = [
-#         ('rearLeft', CT),
-#         ('rearRight', CT),
-#         ('frontLeft', CT),
-#         ('frontRight', CT),
-#     ]

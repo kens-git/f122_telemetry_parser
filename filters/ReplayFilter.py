@@ -10,11 +10,12 @@ from constants.constants import (
 from filters.Filter import Filter
 from packets.packets import (
     CarDamagePacket, CarSetupsPacket, CarStatusPacket, CarTelemetryPacket,
-    EventPacket, LapDataPacket, MotionPacket, Packet, ParticipantsPacket,
-    SessionPacket)
+    EventPacket, FinalClassificationPacket, LapDataPacket, MotionPacket,
+    Packet, ParticipantsPacket, SessionPacket)
 from packets.packet_data import (
-    DriveThroughPenaltyServed, FastestLap, Flashback, Penalty, RaceWinner,
-    Retirement, SpeedTrap, StartLights, StopGoPenaltyServed)
+    DriveThroughPenaltyServed, FastestLap, FinalClassificationData, Flashback,
+    Penalty, RaceWinner, Retirement, SpeedTrap, StartLights,
+    StopGoPenaltyServed)
 import utilities.data as du
 
 
@@ -67,12 +68,11 @@ class ReplayFilter(Filter):
 
     This class is due for a major refactor and the implementation details of
     it should not be relied on.
-
-    TODO: document somewhere the format this class outputs.
     """
 
     def __init__(self):
-        self.version = 1
+        self.format_version = 1
+        self.is_session_started = False
         self.session_start_time: float = 0
         self.session_end_time: float = 0
         self.file_start_write_time: float = 0
@@ -80,11 +80,15 @@ class ReplayFilter(Filter):
         self.data: Dict[str, Any] = {}
         self._reset()
 
-    # TODO: filter final classification to ensure all driver data is available after a finish
-    #       (since it's possible the session ends without all drivers finishing before the
-    #        user advances to the next screen)
     def filter(self, packet: Packet):
         packet_id = packet.packetId
+        if not self.is_session_started:
+            if packet_id != PacketId.EVENT.value:
+                return
+            p = cast(EventPacket, packet)
+            event_code = du.to_string(p.eventStringCode)
+            if event_code != EventStringCode.SESSION_START.value:
+                return
         if packet_id == PacketId.MOTION.value:
             packet = cast(MotionPacket, packet)
             self._filter_motion(packet)
@@ -112,6 +116,9 @@ class ReplayFilter(Filter):
         elif packet_id == PacketId.CAR_DAMAGE.value:
             packet = cast(CarDamagePacket, packet)
             self._filter_car_damage(packet)
+        elif packet_id == PacketId.FINAL_CLASSIFICATION.value:
+            packet = cast(FinalClassificationPacket, packet)
+            self._filter_final_classification(packet)
 
     def _filter_car_damage(self, packet: CarDamagePacket):
         timestamp = packet.sessionTime
@@ -316,21 +323,23 @@ class ReplayFilter(Filter):
         if event_code == EventStringCode.BUTTON.value:
             return
         if event_code == EventStringCode.SESSION_START.value:
-            # TODO: this needs to reset if multiple session starts are detected:
-            #       It's possible to open the pause menu while waiting on the grid,
-            #       then after closing the menu a session start event is sent.
-            #       If the user then quits the race no end event is sent, causing
-            #       the filter to wait for an end event that isn't coming.
-            logging.info('Session start detected.')
-            self.session_start_time = time.time()
-            self.data['event'][event_code] = (
-                packet.sessionTime, event_code)
+            if self.is_session_started:
+                logging.info(
+                    'Duplicate session start detected: restarting session.')
+                self._reset()
+                self._filter_event(packet)
+            else:
+                logging.info('Session start detected.')
+                self.is_session_started = True
+                self.session_start_time = time.time()
+                self.data['event'][event_code] = (
+                    packet.sessionTime, event_code)
         elif event_code == EventStringCode.SESSION_END.value:
-            logging.info('Session end detected.')
+            logging.info(
+                'Session end detected.')
             self.session_end_time = time.time()
             self.data['event'][event_code] = (
                 packet.sessionTime, event_code)
-            self._save_data()
         elif event_code == EventStringCode.FASTEST_LAP.value:
             data = cast(FastestLap, packet.eventDetails.FastestLap)
             self.data['event'][event_code].append((
@@ -396,6 +405,42 @@ class ReplayFilter(Filter):
             self.data['event'][event_code].append(
                 (packet.sessionTime, event_code,
                  data.flashbackSessionTime))
+
+    def _filter_final_classification(self, packet: FinalClassificationPacket):
+        timestamp = packet.sessionTime
+        self.data['final_classification']['numCars'] = packet.numCars
+        for index, data in enumerate(packet.classificationData):
+            data_list = self.data['final_classification']['data'][index]
+            set(data_list['position'], timestamp, data.position,
+                DataStorePolicy.FIRST)
+            set(data_list['numLaps'], timestamp, data.numLaps,
+                DataStorePolicy.FIRST)
+            set(data_list['gridPosition'], timestamp, data.gridPosition,
+                DataStorePolicy.FIRST)
+            set(data_list['points'], timestamp, data.points,
+                DataStorePolicy.FIRST)
+            set(data_list['numPitStops'], timestamp, data.numPitStops,
+                DataStorePolicy.FIRST)
+            set(data_list['resultStatus'], timestamp, data.resultStatus,
+                DataStorePolicy.FIRST)
+            set(data_list['bestLapTimeInMS'], timestamp, data.bestLapTimeInMS,
+                DataStorePolicy.FIRST)
+            set(data_list['totalRaceTime'], timestamp, data.totalRaceTime,
+                DataStorePolicy.FIRST)
+            set(data_list['penaltiesTime'], timestamp, data.penaltiesTime,
+                DataStorePolicy.FIRST)
+            set(data_list['numPenalties'], timestamp, data.numPenalties,
+                DataStorePolicy.FIRST)
+            set(data_list['numTyreStints'], timestamp, data.numTyreStints,
+                DataStorePolicy.FIRST)
+            set(data_list['tyreStintsActual'], timestamp,
+                tuple(x for x in data.tyreStintsActual), DataStorePolicy.FIRST)
+            set(data_list['tyreStintsVisual'], timestamp,
+                tuple(x for x in data.tyreStintsVisual), DataStorePolicy.FIRST)
+            set(data_list['tyreStintEndLaps'], timestamp,
+                tuple(x for x in data.tyreStintEndLaps), DataStorePolicy.FIRST)
+        logging.info('Final classification received.')
+        self._save_data()
 
     def _filter_lap_data(self, packet: LapDataPacket):
         timestamp = packet.sessionTime
@@ -545,6 +590,7 @@ class ReplayFilter(Filter):
             packet.sessionLength, DataStorePolicy.FIRST)
 
     def _reset(self):
+        self.is_session_started = False
         self.session_start_time = 0
         self.session_end_time = 0
         self.file_start_write_time = 0
@@ -739,11 +785,31 @@ class ReplayFilter(Filter):
                     'engineBlown': [],
                     'engineSeized': [],
                 } for _ in range(GRID_SIZE)],
+            'final_classification': {
+                    'numCars': 0,
+                    'data': [{
+                        'position': [],
+                        'numLaps': [],
+                        'gridPosition': [],
+                        'points': [],
+                        'numPitStops': [],
+                        'resultStatus': [],
+                        'bestLapTimeInMS': [],
+                        'totalRaceTime': [],
+                        'penaltiesTime': [],
+                        'numPenalties': [],
+                        'numTyreStints': [],
+                        'tyreStintsActual': [],
+                        'tyreStintsVisual': [],
+                        'tyreStintEndLaps': [],
+                    } for _ in range(GRID_SIZE)],
+                }
         }
 
     def _save_data(self):
         if self.data['participants']['numActiveCars'] is None:
             logging.info("No participants data: can't write file.")
+            self._reset()
             return
         logging.info('Session filtering complete.')
         logging.debug(f'Session filter time: \
@@ -756,13 +822,13 @@ class ReplayFilter(Filter):
             self.data['session']['sessionType'][0][1]][0:12].replace(
                 ' ', '_').replace('-', '_')
         session_uid = str(self.data['session']['sessionUID'][0][1])[-8:]
-        # TODO: ReplayFilter version # in filename (e.g., _v1.json)
-        filename = f'{track_name}_{session_type}_{session_uid}.json'
+        filename = f'{track_name}_{session_type}_{session_uid}_fv\
+{self.format_version}.json'
         filepath = Path('saved_data')
         filepath.mkdir(exist_ok=True)
         filepath = filepath / filename
         with filepath.open(mode='w', encoding='utf-8') as f:
-            json.dump(self.data, f, ensure_ascii=False,
+            json.dump(self.data['final_classification'], f, ensure_ascii=False,
                       separators=(',', ':'))
         logging.info(f'Finished writing file: {filename}\n')
         self.file_end_write_time = time.time()

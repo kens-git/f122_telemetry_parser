@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import cast
 from constants.constants import PacketId
 from packets.packets import (
@@ -69,51 +69,39 @@ class Filter(ABC):
             raise ValueError(
                 f'Invalid packet id in Filter.filter: {packet_id}')
 
-    @abstractmethod
     def filter_motion(self, packet: MotionPacket):
         pass
 
-    @abstractmethod
     def filter_lap_data(self, packet: LapDataPacket):
         pass
 
-    @abstractmethod
     def filter_session(self, packet: SessionPacket):
         pass
 
-    @abstractmethod
     def filter_event(self, packet: EventPacket):
         pass
 
-    @abstractmethod
     def filter_participants(self, packet: ParticipantsPacket):
         pass
 
-    @abstractmethod
     def filter_car_setups(self, packet: CarSetupsPacket):
         pass
 
-    @abstractmethod
     def filter_car_telemetry(self, packet: CarTelemetryPacket):
         pass
 
-    @abstractmethod
     def filter_car_status(self, packet: CarStatusPacket):
         pass
 
-    @abstractmethod
     def filter_final_classification(
             self, packet: FinalClassificationPacket):
         pass
 
-    @abstractmethod
     def filter_lobby_info(self, packet: LobbyInfoPacket):
         pass
 
-    @abstractmethod
     def filter_car_damage(self, packet: CarDamagePacket):
         pass
 
-    @abstractmethod
     def filter_session_history(self, packet: SessionHistoryPacket):
         pass

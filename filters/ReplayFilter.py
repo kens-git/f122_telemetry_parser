@@ -828,7 +828,7 @@ class ReplayFilter(Filter):
         filepath.mkdir(exist_ok=True)
         filepath = filepath / filename
         with filepath.open(mode='w', encoding='utf-8') as f:
-            json.dump(self.data['final_classification'], f, ensure_ascii=False,
+            json.dump(self.data, f, ensure_ascii=False,
                       separators=(',', ':'))
         logging.info(f'Finished writing file: {filename}\n')
         self.file_end_write_time = time.time()

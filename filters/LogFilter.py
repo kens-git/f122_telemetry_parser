@@ -206,22 +206,13 @@ class LogFilter(Filter):
         self.session_displayed = False
         self.participants: Optional[Array[ParticipantsData]] = None
 
-    def filter(self, packet: Packet):
-        packet_id = packet.packetId
-        if packet_id == PacketId.SESSION.value:
-            self._filter_session(cast(SessionPacket, packet))
-        elif packet_id == PacketId.EVENT.value:
-            self._filter_event(cast(EventPacket, packet))
-        elif packet_id == PacketId.PARTICIPANTS.value:
-            self._filter_participants(cast(ParticipantsPacket, packet))
-
     def _get_driver_name(self, vehicle_index: int):
         participant = cast(Array[ParticipantsData],
                            self.participants)[vehicle_index]
         return get_driver_name(
             participant.driverId, du.to_string(participant.name))
 
-    def _filter_session(self, packet: SessionPacket):
+    def filter_session(self, packet: SessionPacket):
         if self.session_displayed is True:
             return
         self.session_displayed = True
@@ -232,7 +223,7 @@ class LogFilter(Filter):
         logging.info(f'\tAir: {packet.airTemperature}°')
         logging.info(f'\tTrack: {packet.trackTemperature}°')
 
-    def _filter_event(self, packet: EventPacket):
+    def filter_event(self, packet: EventPacket):
         event_code = du.to_string(packet.eventStringCode)
         if event_code == EventStringCode.SESSION_START.value:
             print_with_session_timestamp(
@@ -315,7 +306,7 @@ class LogFilter(Filter):
             print_with_session_timestamp(
                 packet.sessionTime, 'Flashback initiated.')
 
-    def _filter_participants(self, packet: ParticipantsPacket):
+    def filter_participants(self, packet: ParticipantsPacket):
         if self.participants is not None:
             return
         self.participants = packet.participants

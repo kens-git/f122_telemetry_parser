@@ -280,7 +280,7 @@ class LogFilter(Filter):
             other_vehicle = data.otherVehicleIdx
             second_driver = (self._get_driver_name(other_vehicle)
                              if other_vehicle != NULL_BYTE_VALUE else None)
-            time = data.time if data.time != 255 else None  # TODO: magic number
+            time = data.time if data.time != NULL_BYTE_VALUE else None
             p_string = create_penalty_string(
                 data.penaltyType, data.infringementType,
                 self._get_driver_name(data.vehicleIdx),

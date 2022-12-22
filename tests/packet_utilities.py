@@ -217,3 +217,47 @@ def create_penalty_data() -> bytes:
     packet += pack('<B', 6)
     packet += pack('<B', 7)
     return pad_event_data(packet)
+
+
+def create_speed_trap_data() -> bytes:
+    packet = create_packet_header_data(PacketId.EVENT)
+    packet += create_event_code_data(
+        EventStringCode.SPEED_TRAP.value)
+    packet += pack('<B', 1)
+    packet += pack('<f', 2.5)
+    packet += pack('<B', 3)
+    packet += pack('<B', 4)
+    packet += pack('<B', 5)
+    packet += pack('<f', 6.5)
+    return pad_event_data(packet)
+
+
+def create_start_lights_data() -> bytes:
+    packet = create_packet_header_data(PacketId.EVENT)
+    packet += create_event_code_data(
+        EventStringCode.START_LIGHTS.value)
+    packet += pack('<B', 1)
+    return pad_event_data(packet)
+
+
+def create_drive_through_data() -> bytes:
+    packet = create_packet_header_data(PacketId.EVENT)
+    packet += create_event_code_data(
+        EventStringCode.DRIVE_THROUGH_SERVED.value)
+    packet += pack('<B', 1)
+    return pad_event_data(packet)
+
+
+def create_stop_go_data() -> bytes:
+    packet = create_packet_header_data(PacketId.EVENT)
+    packet += create_event_code_data(
+        EventStringCode.STOP_GO_SERVED.value)
+    packet += pack('<B', 1)
+    return pad_event_data(packet)
+
+
+def create_button_data() -> bytes:
+    packet = create_packet_header_data(PacketId.EVENT)
+    packet += create_event_code_data(EventStringCode.BUTTON.value)
+    packet += pack('<I', 1)
+    return pad_event_data(packet)

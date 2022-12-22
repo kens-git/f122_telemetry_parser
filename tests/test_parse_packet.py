@@ -247,10 +247,29 @@ class TestParsePacket(TestCase):
         self.assertEqual(packet.eventDetails.Penalty.placesGained, 7)
 
     def test_event_speed_trap_triggered(self):
-        self.assertEqual(True, False)
+        packet = cast(EventPacket,
+                      parse_packet(pu.create_speed_trap_data()))
+        assert_packet_header(self, packet, PacketId.EVENT)
+        self.assertEqual(du.to_string(packet.eventStringCode),
+                         EventStringCode.SPEED_TRAP.value)
+        self.assertEqual(packet.eventDetails.SpeedTrap.vehicleIdx, 1)
+        self.assertEqual(packet.eventDetails.SpeedTrap.speed, 2.5)
+        self.assertEqual(
+            packet.eventDetails.SpeedTrap.isOverallFastestInSession, 3)
+        self.assertEqual(
+            packet.eventDetails.SpeedTrap.isDriverFastestInSession, 4)
+        self.assertEqual(
+            packet.eventDetails.SpeedTrap.fastestVehicleIdxInSession, 5)
+        self.assertEqual(
+            packet.eventDetails.SpeedTrap.fastestSpeedInSession, 6.5)
 
     def test_event_start_lights(self):
-        self.assertEqual(True, False)
+        packet = cast(EventPacket,
+                      parse_packet(pu.create_start_lights_data()))
+        assert_packet_header(self, packet, PacketId.EVENT)
+        self.assertEqual(du.to_string(packet.eventStringCode),
+                         EventStringCode.START_LIGHTS.value)
+        self.assertEqual(packet.eventDetails.StartLights.numLights, 1)
 
     def test_event_lights_out(self):
         packet = cast(EventPacket,
@@ -260,16 +279,37 @@ class TestParsePacket(TestCase):
                          EventStringCode.LIGHTS_OUT.value)
 
     def test_event_drive_through_served(self):
-        self.assertEqual(True, False)
+        packet = cast(EventPacket,
+                      parse_packet(pu.create_drive_through_data()))
+        assert_packet_header(self, packet, PacketId.EVENT)
+        self.assertEqual(du.to_string(packet.eventStringCode),
+                         EventStringCode.DRIVE_THROUGH_SERVED.value)
+        self.assertEqual(
+            packet.eventDetails.DriveThroughPenaltyServed.vehicleIdx, 1)
 
     def test_event_stop_go_served(self):
-        self.assertEqual(True, False)
+        packet = cast(EventPacket,
+                      parse_packet(pu.create_stop_go_data()))
+        assert_packet_header(self, packet, PacketId.EVENT)
+        self.assertEqual(du.to_string(packet.eventStringCode),
+                         EventStringCode.START_LIGHTS.value)
+        self.assertEqual(packet.eventDetails.StartLights.numLights, 1)
 
     def test_event_flashback(self):
-        self.assertEqual(True, False)
+        packet = cast(EventPacket,
+                      parse_packet(pu.create_stop_go_data()))
+        assert_packet_header(self, packet, PacketId.EVENT)
+        self.assertEqual(du.to_string(packet.eventStringCode),
+                         EventStringCode.STOP_GO_SERVED.value)
+        self.assertEqual(packet.eventDetails.StopGoPenaltyServed.vehicleIdx, 1)
 
     def test_event_button_status(self):
-        self.assertEqual(True, False)
+        packet = cast(EventPacket,
+                      parse_packet(pu.create_button_data()))
+        assert_packet_header(self, packet, PacketId.EVENT)
+        self.assertEqual(du.to_string(packet.eventStringCode),
+                         EventStringCode.BUTTON.value)
+        self.assertEqual(packet.eventDetails.Buttons.buttonStatus, 1)
 
     def test_participants(self):
         self.assertEqual(True, False)

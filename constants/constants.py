@@ -5,11 +5,36 @@ from typing import Dict, Final
 PACKET_HEADER_LENGTH: Final[int] = 24
 """The length of the packet header, in bytes."""
 
+EVENT_PACKET_LENGTH: Final[int] = PACKET_HEADER_LENGTH + 16
+"""The length of the event packet (including header), in bytes.
+
+This length includes the 4 byte event code, and 12 bytes for the
+event data union.
+"""
+
 PACKET_HEADER_ID_INDEX: Final[int] = 5
 """The byte index of the packet id."""
 
 GRID_SIZE: Final[int] = 22
 """The number of grid positions."""
+
+TIRE_COUNT: Final[int] = 4
+"""Number of tires per car.
+
+Because you never know...
+"""
+
+MAX_MARSHAL_ZONES: Final[int] = 21
+"""Maximum number of marshal zones."""
+
+MAX_WEATHER_SAMPLES: Final[int] = 56
+"""Maximum number of weather samples for a session."""
+
+MAX_TYRE_STINTS: Final[int] = 8
+"""Maximum number of tire stints."""
+
+MAX_LAP_HISTORIES: Final[int] = 100
+"""Maximum number of lap histories for a session."""
 
 NULL_BYTE_VALUE: Final[int] = 255
 """Value of null packet data for unsigned, single-byte types."""

@@ -1,5 +1,6 @@
 from ctypes import (
     c_double, c_float, c_int8, c_int16, c_uint8, c_uint16, c_uint32, Union)
+from constants.constants import MAX_TYRE_STINTS, TIRE_COUNT
 from custom_types.game import F1PacketStructure, Name
 
 """This module contains dataclasses for data types contained in
@@ -9,9 +10,9 @@ the packets.
 
 class CarDamageData(F1PacketStructure):
     _fields_ = [
-        ('tyresWear', c_float * 4),
-        ('tyresDamage', c_uint8 * 4),
-        ('brakesDamage', c_uint8 * 4),
+        ('tyresWear', c_float * TIRE_COUNT),
+        ('tyresDamage', c_uint8 * TIRE_COUNT),
+        ('brakesDamage', c_uint8 * TIRE_COUNT),
         ('frontLeftWingDamage', c_uint8),
         ('frontRightWingDamage', c_uint8),
         ('rearWingDamage', c_uint8),
@@ -100,12 +101,12 @@ class CarTelemetryData(F1PacketStructure):
         ('drs', c_uint8),
         ('revLightsPercent', c_uint8),
         ('revLightsBitValue', c_uint16),
-        ('brakesTemperature', c_uint16 * 4),
-        ('tiresSurfaceTemperature', c_uint8 * 4),
-        ('tiresInnerTemperature', c_uint8 * 4),
+        ('brakesTemperature', c_uint16 * TIRE_COUNT),
+        ('tiresSurfaceTemperature', c_uint8 * TIRE_COUNT),
+        ('tiresInnerTemperature', c_uint8 * TIRE_COUNT),
         ('engineTemperature', c_uint16),
-        ('tiresPressure', c_float * 4),
-        ('surfaceType', c_uint8 * 4),
+        ('tiresPressure', c_float * TIRE_COUNT),
+        ('surfaceType', c_uint8 * TIRE_COUNT),
     ]
 
 
@@ -122,9 +123,9 @@ class FinalClassificationData(F1PacketStructure):
         ('penaltiesTime', c_uint8),
         ('numPenalties', c_uint8),
         ('numTyreStints', c_uint8),
-        ('tyreStintsActual', c_uint8 * 8),
-        ('tyreStintsVisual', c_uint8 * 8),
-        ('tyreStintEndLaps', c_uint8 * 8),
+        ('tyreStintsActual', c_uint8 * MAX_TYRE_STINTS),
+        ('tyreStintsVisual', c_uint8 * MAX_TYRE_STINTS),
+        ('tyreStintEndLaps', c_uint8 * MAX_TYRE_STINTS),
     ]
 
 

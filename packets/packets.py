@@ -1,6 +1,8 @@
 from ctypes import (c_float, c_int8, c_uint8, c_uint16, c_uint32, c_uint64)
 from typing import Dict, Final, Type
-from constants.constants import GRID_SIZE, PacketId
+from constants.constants import (
+    GRID_SIZE, MAX_LAP_HISTORIES, MAX_WEATHER_SAMPLES, MAX_TYRE_STINTS,
+    MAX_MARSHAL_ZONES, PacketId, TIRE_COUNT)
 from custom_types.game import EventCode, F1PacketStructure
 from packets.packet_data import (
     CarDamageData, CarMotionData, CarSetupsData, CarStatusData,
@@ -87,11 +89,11 @@ class LobbyInfoPacket(Packet):
 class MotionPacket(Packet):
     _fields_ = [
         ('carMotionData', CarMotionData * GRID_SIZE),
-        ('suspensionPosition', c_float * 4),
-        ('suspensionVelocity', c_float * 4),
-        ('suspensionAcceleration', c_float * 4),
-        ('wheelSpeed', c_float * 4),
-        ('wheelSlip', c_float * 4),
+        ('suspensionPosition', c_float * TIRE_COUNT),
+        ('suspensionVelocity', c_float * TIRE_COUNT),
+        ('suspensionAcceleration', c_float * TIRE_COUNT),
+        ('wheelSpeed', c_float * TIRE_COUNT),
+        ('wheelSlip', c_float * TIRE_COUNT),
         ('localVelocityX', c_float),
         ('localVelocityY', c_float),
         ('localVelocityZ', c_float),
@@ -121,8 +123,8 @@ class SessionHistoryPacket(Packet):
         ('bestSector1LapNum', c_uint8),
         ('bestSector2LapNum', c_uint8),
         ('bestSector3LapNum', c_uint8),
-        ('lapHistoryData', LapHistoryData * 100),
-        ('tyreStintHistoryData', TyreStintHistoryData * 8),
+        ('lapHistoryData', LapHistoryData * MAX_LAP_HISTORIES),
+        ('tyreStintHistoryData', TyreStintHistoryData * MAX_TYRE_STINTS),
     ]
 
 
@@ -144,11 +146,12 @@ class SessionPacket(Packet):
         ('spectatorCarIndex', c_uint8),
         ('sliProNativeSupport', c_uint8),
         ('numMarshalZones', c_uint8),
-        ('marshalZones', MarshalZone * 21),
+        ('marshalZones', MarshalZone * MAX_MARSHAL_ZONES),
         ('safetyCarStatus', c_uint8),
         ('networkGame', c_uint8),
         ('numWeatherForecastSamples', c_uint8),
-        ('weatherForecastSamples', WeatherForecastSample * 56),
+        ('weatherForecastSamples',
+            WeatherForecastSample * MAX_WEATHER_SAMPLES),
         ('forecastAccuracy', c_uint8),
         ('aiDifficulty', c_uint8),
         ('seasonLinkIdentifier', c_uint32),

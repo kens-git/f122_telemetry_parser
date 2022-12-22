@@ -4,7 +4,7 @@ from constants.constants import (
     EventStringCode, GRID_SIZE, MAX_MARSHAL_ZONES, MAX_WEATHER_SAMPLES,
     PacketId)
 from packets.packets import (
-    EventPacket, MotionPacket, Packet, SessionPacket)
+    EventPacket, LapDataPacket, MotionPacket, Packet, SessionPacket)
 import tests.packet_utilities as pu
 import utilities.data as du
 from utilities.parse import parse_packet
@@ -132,7 +132,37 @@ class TestParsePacket(TestCase):
         self.assertEqual(packet.sessionLength, 40)
 
     def test_lap_data(self):
-        pass
+        packet = cast(LapDataPacket,
+                      parse_packet(pu.create_lap_data()))
+        assert_packet_header(self, packet, PacketId.LAP_DATA)
+        self.assertEqual(len(packet.lapData), GRID_SIZE)
+        for lap in packet.lapData:
+            self.assertEqual(lap.lastLapTimeInMS, 1)
+            self.assertEqual(lap.currentLapTimeInMS, 2)
+            self.assertEqual(lap.sector1TimeInMS, 3)
+            self.assertEqual(lap.sector2TimeInMS, 4)
+            self.assertEqual(lap.lapDistance, 5)
+            self.assertEqual(lap.totalDistance, 6)
+            self.assertEqual(lap.safetyCarDelta, 7)
+            self.assertEqual(lap.carPosition, 8)
+            self.assertEqual(lap.currentLapNum, 9)
+            self.assertEqual(lap.pitStatus, 10)
+            self.assertEqual(lap.numPitStops, 11)
+            self.assertEqual(lap.sector, 12)
+            self.assertEqual(lap.currentLapInvalid, 13)
+            self.assertEqual(lap.penalties, 14)
+            self.assertEqual(lap.warnings, 15)
+            self.assertEqual(lap.numUnservedDriveThroughPens, 16)
+            self.assertEqual(lap.numUnservedStopGoPens, 17)
+            self.assertEqual(lap.gridPosition, 18)
+            self.assertEqual(lap.driverStatus, 19)
+            self.assertEqual(lap.resultStatus, 20)
+            self.assertEqual(lap.pitLaneTimerActive, 21)
+            self.assertEqual(lap.pitLaneTimeInLaneInMS, 22)
+            self.assertEqual(lap.pitStopTimerInMS, 23)
+            self.assertEqual(lap.pitStopShouldServePen, 24)
+        self.assertEqual(packet.timeTrialPBCarIdx, 1)
+        self.assertEqual(packet.timeTrialRivalCarIdx, 2)
 
     def test_event_session_started(self):
         packet = cast(EventPacket,
@@ -158,7 +188,12 @@ class TestParsePacket(TestCase):
         self.assertEqual(packet.eventDetails.FastestLap.lapTime, 1.5)
 
     def test_event_retirement(self):
-        pass
+        packet = cast(EventPacket,
+                      parse_packet(pu.create_retirement_data()))
+        assert_packet_header(self, packet, PacketId.EVENT)
+        self.assertEqual(du.to_string(packet.eventStringCode),
+                         EventStringCode.RETIREMENT.value)
+        self.assertEqual(packet.eventDetails.Retirement.vehicleIdx, 1)
 
     def test_event_drs_enabled(self):
         packet = cast(EventPacket,
@@ -175,7 +210,12 @@ class TestParsePacket(TestCase):
                          EventStringCode.DRS_DISABLED.value)
 
     def test_event_team_mate_in_pits(self):
-        pass
+        packet = cast(EventPacket,
+                      parse_packet(pu.create_team_mate_in_pits_data()))
+        assert_packet_header(self, packet, PacketId.EVENT)
+        self.assertEqual(du.to_string(packet.eventStringCode),
+                         EventStringCode.TEAM_MATE_IN_PITS.value)
+        self.assertEqual(packet.eventDetails.TeamMateInPits.vehicleIdx, 1)
 
     def test_event_chequered_flag(self):
         packet = cast(EventPacket,
@@ -185,16 +225,32 @@ class TestParsePacket(TestCase):
                          EventStringCode.CHEQUERED_FLAG.value)
 
     def test_event_race_winner(self):
-        pass
+        packet = cast(EventPacket,
+                      parse_packet(pu.create_race_winner_data()))
+        assert_packet_header(self, packet, PacketId.EVENT)
+        self.assertEqual(du.to_string(packet.eventStringCode),
+                         EventStringCode.RACE_WINNER.value)
+        self.assertEqual(packet.eventDetails.RaceWinner.vehicleIdx, 1)
 
     def test_event_penalty_issued(self):
-        pass
+        packet = cast(EventPacket,
+                      parse_packet(pu.create_penalty_data()))
+        assert_packet_header(self, packet, PacketId.EVENT)
+        self.assertEqual(du.to_string(packet.eventStringCode),
+                         EventStringCode.PENALTY.value)
+        self.assertEqual(packet.eventDetails.Penalty.penaltyType, 1)
+        self.assertEqual(packet.eventDetails.Penalty.infringementType, 2)
+        self.assertEqual(packet.eventDetails.Penalty.vehicleIdx, 3)
+        self.assertEqual(packet.eventDetails.Penalty.otherVehicleIdx, 4)
+        self.assertEqual(packet.eventDetails.Penalty.time, 5)
+        self.assertEqual(packet.eventDetails.Penalty.lapNum, 6)
+        self.assertEqual(packet.eventDetails.Penalty.placesGained, 7)
 
     def test_event_speed_trap_triggered(self):
-        pass
+        self.assertEqual(True, False)
 
     def test_event_start_lights(self):
-        pass
+        self.assertEqual(True, False)
 
     def test_event_lights_out(self):
         packet = cast(EventPacket,
@@ -204,37 +260,37 @@ class TestParsePacket(TestCase):
                          EventStringCode.LIGHTS_OUT.value)
 
     def test_event_drive_through_served(self):
-        pass
+        self.assertEqual(True, False)
 
     def test_event_stop_go_served(self):
-        pass
+        self.assertEqual(True, False)
 
     def test_event_flashback(self):
-        pass
+        self.assertEqual(True, False)
 
     def test_event_button_status(self):
-        pass
+        self.assertEqual(True, False)
 
     def test_participants(self):
-        pass
+        self.assertEqual(True, False)
 
     def test_car_setups(self):
-        pass
+        self.assertEqual(True, False)
 
     def test_car_telemetry(self):
-        pass
+        self.assertEqual(True, False)
 
     def test_car_status(self):
-        pass
+        self.assertEqual(True, False)
 
     def test_final_classification(self):
-        pass
+        self.assertEqual(True, False)
 
     def test_lobby_info(self):
-        pass
+        self.assertEqual(True, False)
 
     def test_car_damage(self):
-        pass
+        self.assertEqual(True, False)
 
     def test_session_history(self):
-        pass
+        self.assertEqual(True, False)

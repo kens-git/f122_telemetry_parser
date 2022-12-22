@@ -325,15 +325,15 @@ class Buttons(F1PacketStructure):
 
 class EventDataDetails(Union):
     _fields_ = [
-        ("FastestLap", FastestLap),
-        ("Retirement", Retirement),
-        ("TeamMateInPits", TeamMateInPits),
-        ("RaceWinner", RaceWinner),
-        ("Penalty", Penalty),
-        ("SpeedTrap", SpeedTrap),
-        ("StartLights", StartLights),
-        ("DriveThroughPenaltyServed", DriveThroughPenaltyServed),
-        ("StopGoPenaltyServed", StopGoPenaltyServed),
-        ("Flashback", Flashback),
-        ("Buttons", Buttons),
+        ('FastestLap', FastestLap),
+        ('Retirement', Retirement),
+        ('TeamMateInPits', TeamMateInPits),
+        ('RaceWinner', RaceWinner),
+        ('Penalty', Penalty),
+        ('SpeedTrap', SpeedTrap),
+        ('StartLights', StartLights),
+        ('DriveThroughPenaltyServed', DriveThroughPenaltyServed),
+        ('StopGoPenaltyServed', StopGoPenaltyServed),
+        ('Flashback', Flashback),
+        ('Buttons', Buttons),
     ]

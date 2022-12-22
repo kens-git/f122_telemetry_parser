@@ -1,6 +1,6 @@
 from struct import pack
 from constants.constants import (
-    EVENT_PACKET_LENGTH, GRID_SIZE, MAX_MARSHAL_ZONES,
+    EventStringCode, EVENT_PACKET_LENGTH, GRID_SIZE, MAX_MARSHAL_ZONES,
     MAX_WEATHER_SAMPLES, PacketId)
 
 
@@ -129,6 +129,38 @@ def create_session_data() -> bytes:
     return packet
 
 
+def create_lap_data() -> bytes:
+    packet = create_packet_header_data(PacketId.LAP_DATA)
+    for _ in range(GRID_SIZE):
+        packet += pack('<I', 1)
+        packet += pack('<I', 2)
+        packet += pack('<H', 3)
+        packet += pack('<H', 4)
+        packet += pack('<f', 5)
+        packet += pack('<f', 6)
+        packet += pack('<f', 7)
+        packet += pack('<B', 8)
+        packet += pack('<B', 9)
+        packet += pack('<B', 10)
+        packet += pack('<B', 11)
+        packet += pack('<B', 12)
+        packet += pack('<B', 13)
+        packet += pack('<B', 14)
+        packet += pack('<B', 15)
+        packet += pack('<B', 16)
+        packet += pack('<B', 17)
+        packet += pack('<B', 18)
+        packet += pack('<B', 19)
+        packet += pack('<B', 20)
+        packet += pack('<B', 21)
+        packet += pack('<H', 22)
+        packet += pack('<H', 23)
+        packet += pack('<B', 24)
+    packet += pack('<B', 1)
+    packet += pack('<B', 2)
+    return packet
+
+
 def pad_event_data(data: bytes) -> bytes:
     return data + (b'0' * (EVENT_PACKET_LENGTH - len(data)))
 
@@ -142,7 +174,46 @@ def create_generic_event_data(event_code: str) -> bytes:
 
 def create_fastest_lap_data() -> bytes:
     packet = create_packet_header_data(PacketId.EVENT)
-    packet += create_event_code_data('FTLP')
+    packet += create_event_code_data(
+        EventStringCode.FASTEST_LAP.value)
     packet += pack('<B', 1)
     packet += pack('<f', 1.5)
+    return pad_event_data(packet)
+
+
+def create_retirement_data() -> bytes:
+    packet = create_packet_header_data(PacketId.EVENT)
+    packet += create_event_code_data(
+        EventStringCode.RETIREMENT.value)
+    packet += pack('<B', 1)
+    return pad_event_data(packet)
+
+
+def create_team_mate_in_pits_data() -> bytes:
+    packet = create_packet_header_data(PacketId.EVENT)
+    packet += create_event_code_data(
+        EventStringCode.TEAM_MATE_IN_PITS.value)
+    packet += pack('<B', 1)
+    return pad_event_data(packet)
+
+
+def create_race_winner_data() -> bytes:
+    packet = create_packet_header_data(PacketId.EVENT)
+    packet += create_event_code_data(
+        EventStringCode.RACE_WINNER.value)
+    packet += pack('<B', 1)
+    return pad_event_data(packet)
+
+
+def create_penalty_data() -> bytes:
+    packet = create_packet_header_data(PacketId.EVENT)
+    packet += create_event_code_data(
+        EventStringCode.PENALTY.value)
+    packet += pack('<B', 1)
+    packet += pack('<B', 2)
+    packet += pack('<B', 3)
+    packet += pack('<B', 4)
+    packet += pack('<B', 5)
+    packet += pack('<B', 6)
+    packet += pack('<B', 7)
     return pad_event_data(packet)

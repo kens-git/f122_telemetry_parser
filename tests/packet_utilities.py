@@ -1,5 +1,7 @@
 from struct import pack
-from constants.constants import GRID_SIZE, PacketId
+from constants.constants import (
+    EVENT_PACKET_LENGTH, GRID_SIZE, MAX_MARSHAL_ZONES,
+    MAX_WEATHER_SAMPLES, PacketId)
 
 
 def create_packet_header_data(id: PacketId) -> bytes:
@@ -70,14 +72,77 @@ def create_motion_data() -> bytes:
     return packet
 
 
+def create_session_data() -> bytes:
+    packet = create_packet_header_data(PacketId.SESSION)
+    packet += pack('<B', 1)
+    packet += pack('<b', 2)
+    packet += pack('<b', 3)
+    packet += pack('<B', 4)
+    packet += pack('<H', 5)
+    packet += pack('<B', 6)
+    packet += pack('<b', 7)
+    packet += pack('<B', 8)
+    packet += pack('<H', 9)
+    packet += pack('<H', 10)
+    packet += pack('<B', 11)
+    packet += pack('<B', 12)
+    packet += pack('<B', 13)
+    packet += pack('<B', 14)
+    packet += pack('<B', 15)
+    packet += pack('<B', 16)
+    for _ in range(MAX_MARSHAL_ZONES):
+        packet += pack('<f', 1.5)
+        packet += pack('<b', 2)
+    packet += pack('<B', 17)
+    packet += pack('<B', 18)
+    packet += pack('<B', 19)
+    for _ in range(MAX_WEATHER_SAMPLES):
+        packet += pack('<B', 1)
+        packet += pack('<B', 2)
+        packet += pack('<B', 3)
+        packet += pack('<b', 4)
+        packet += pack('<b', 5)
+        packet += pack('<b', 6)
+        packet += pack('<b', 7)
+        packet += pack('<B', 8)
+    packet += pack('<B', 20)
+    packet += pack('<B', 21)
+    packet += pack('<I', 22)
+    packet += pack('<I', 23)
+    packet += pack('<I', 24)
+    packet += pack('<B', 25)
+    packet += pack('<B', 26)
+    packet += pack('<B', 27)
+    packet += pack('<B', 28)
+    packet += pack('<B', 29)
+    packet += pack('<B', 30)
+    packet += pack('<B', 31)
+    packet += pack('<B', 32)
+    packet += pack('<B', 33)
+    packet += pack('<B', 34)
+    packet += pack('<B', 35)
+    packet += pack('<B', 36)
+    packet += pack('<B', 37)
+    packet += pack('<B', 38)
+    packet += pack('<I', 39)
+    packet += pack('<B', 40)
+    return packet
+
+
+def pad_event_data(data: bytes) -> bytes:
+    return data + (b'0' * (EVENT_PACKET_LENGTH - len(data)))
+
+
 def create_generic_event_data(event_code: str) -> bytes:
     packet = create_packet_header_data(PacketId.EVENT)
     packet += create_event_code_data(event_code)
+    packet += pad_event_data(packet)
     return packet
 
 
 def create_fastest_lap_data() -> bytes:
-    packet = create_generic_event_data('FTLP')
+    packet = create_packet_header_data(PacketId.EVENT)
+    packet += create_event_code_data('FTLP')
     packet += pack('<B', 1)
     packet += pack('<f', 1.5)
-    return packet
+    return pad_event_data(packet)

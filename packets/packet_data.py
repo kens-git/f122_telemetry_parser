@@ -327,7 +327,7 @@ class EventDataDetails(Union):
     _fields_ = [
         ("FastestLap", FastestLap),
         ("Retirement", Retirement),
-        ("TeamMangeInPits", TeamMateInPits),
+        ("TeamMateInPits", TeamMateInPits),
         ("RaceWinner", RaceWinner),
         ("Penalty", Penalty),
         ("SpeedTrap", SpeedTrap),

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from ctypes import Structure
 from enum import Enum
 import json
 import logging
@@ -89,38 +89,9 @@ class ReplayFilter(Filter):
             event_code = du.to_string(p.eventStringCode)
             if event_code != EventStringCode.SESSION_START.value:
                 return
-        if packet_id == PacketId.MOTION.value:
-            packet = cast(MotionPacket, packet)
-            self._filter_motion(packet)
-        elif packet_id == PacketId.SESSION.value:
-            packet = cast(SessionPacket, packet)
-            self._filter_session(packet)
-        elif packet_id == PacketId.LAP_DATA.value:
-            packet = cast(LapDataPacket, packet)
-            self._filter_lap_data(packet)
-        elif packet_id == PacketId.EVENT.value:
-            packet = cast(EventPacket, packet)
-            self._filter_event(packet)
-        elif packet_id == PacketId.PARTICIPANTS.value:
-            packet = cast(ParticipantsPacket, packet)
-            self._filter_participants(packet)
-        elif packet_id == PacketId.CAR_SETUPS.value:
-            packet = cast(CarSetupsPacket, packet)
-            self._filter_car_setups(packet)
-        elif packet_id == PacketId.CAR_TELEMETRY.value:
-            packet = cast(CarTelemetryPacket, packet)
-            self._filter_car_telemetry(packet)
-        elif packet_id == PacketId.CAR_STATUS.value:
-            packet = cast(CarStatusPacket, packet)
-            self._filter_car_status(packet)
-        elif packet_id == PacketId.CAR_DAMAGE.value:
-            packet = cast(CarDamagePacket, packet)
-            self._filter_car_damage(packet)
-        elif packet_id == PacketId.FINAL_CLASSIFICATION.value:
-            packet = cast(FinalClassificationPacket, packet)
-            self._filter_final_classification(packet)
+        super().filter(packet)
 
-    def _filter_car_damage(self, packet: CarDamagePacket):
+    def filter_car_damage(self, packet: CarDamagePacket):
         timestamp = packet.sessionTime
         for index, data in enumerate(packet.carDamageData):
             damage_data = self.data['car_damage'][index]
@@ -170,7 +141,7 @@ class ReplayFilter(Filter):
             set(damage_data['engineSeized'], timestamp,
                 data.engineSeized, DataStorePolicy.ON_CHANGE)
 
-    def _filter_car_setups(self, packet: CarSetupsPacket):
+    def filter_car_setups(self, packet: CarSetupsPacket):
         timestamp = packet.sessionTime
         for index, data in enumerate(packet.carSetups):
             setup_data = self.data['car_setups'][index]
@@ -219,7 +190,7 @@ class ReplayFilter(Filter):
             set(setup_data['fuelLoad'], timestamp, data.fuelLoad,
                 DataStorePolicy.ON_CHANGE)
 
-    def _filter_car_status(self, packet: CarStatusPacket):
+    def filter_car_status(self, packet: CarStatusPacket):
         timestamp = packet.sessionTime
         for index, data in enumerate(packet.carStatusData):
             status_data = self.data['car_status'][index]
@@ -270,7 +241,7 @@ class ReplayFilter(Filter):
             set(status_data['networkPaused'], timestamp,
                 data.networkPaused, DataStorePolicy.ON_CHANGE)
 
-    def _filter_car_telemetry(self, packet: CarTelemetryPacket):
+    def filter_car_telemetry(self, packet: CarTelemetryPacket):
         timestamp = packet.sessionTime
         for index, data in enumerate(packet.carTelemetryData):
             telem_data = self.data['car_telemetry'][index]
@@ -318,7 +289,7 @@ class ReplayFilter(Filter):
                 tuple(x for x in data.surfaceType),
                 DataStorePolicy.ON_CHANGE)
 
-    def _filter_event(self, packet: EventPacket):
+    def filter_event(self, packet: EventPacket):
         event_code = du.to_string(packet.eventStringCode)
         if event_code == EventStringCode.BUTTON.value:
             return
@@ -327,7 +298,7 @@ class ReplayFilter(Filter):
                 logging.info(
                     'Duplicate session start detected: restarting session.')
                 self._reset()
-                self._filter_event(packet)
+                self.filter_event(packet)
             else:
                 logging.info('Session start detected.')
                 self.is_session_started = True
@@ -406,7 +377,7 @@ class ReplayFilter(Filter):
                 (packet.sessionTime, event_code,
                  data.flashbackSessionTime))
 
-    def _filter_final_classification(self, packet: FinalClassificationPacket):
+    def filter_final_classification(self, packet: FinalClassificationPacket):
         timestamp = packet.sessionTime
         self.data['final_classification']['numCars'] = packet.numCars
         for index, data in enumerate(packet.classificationData):
@@ -442,7 +413,7 @@ class ReplayFilter(Filter):
         logging.info('Final classification received.')
         self._save_data()
 
-    def _filter_lap_data(self, packet: LapDataPacket):
+    def filter_lap_data(self, packet: LapDataPacket):
         timestamp = packet.sessionTime
         for index, data in enumerate(packet.lapData):
             lap_data = self.data['lap_data'][index]
@@ -490,7 +461,7 @@ class ReplayFilter(Filter):
             set(lap_data['pitStopShouldServePen'], timestamp,
                 data.pitStopShouldServePen, DataStorePolicy.ON_CHANGE)
 
-    def _filter_motion(self, packet: MotionPacket):
+    def filter_motion(self, packet: MotionPacket):
         for index, data in enumerate(packet.carMotionData):
             data_list = self.data['motion'][index]
             set(data_list['worldPositionX'], packet.sessionTime,
@@ -503,7 +474,7 @@ class ReplayFilter(Filter):
                 float('%.3f' % (data.yaw)),
                 DataStorePolicy.ON_CHANGE)
 
-    def _filter_participants(self, packet: ParticipantsPacket):
+    def filter_participants(self, packet: ParticipantsPacket):
         p_data = self.data['participants']
         if p_data['numActiveCars'] is None:
             p_data['numActiveCars'] = packet.numActiveCars
@@ -519,7 +490,7 @@ class ReplayFilter(Filter):
                 participant['name'] = du.to_string(data.name)
                 participant['yourTelemetry'] = data.yourTelemetry
 
-    def _filter_session(self, packet: SessionPacket):
+    def filter_session(self, packet: SessionPacket):
         session_data = self.data['session']
         set(session_data['sessionUID'], packet.sessionTime,
             packet.sessionUID, DataStorePolicy.FIRST)

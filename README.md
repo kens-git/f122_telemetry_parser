@@ -41,7 +41,7 @@ python ./main.py -f debug -p 25000
 <p>The application is easy to extend with new filter types by:</p>
 <ol>
     <li>Subclassing the filters.Filter class.</li>
-    <li>Implementing the filter method on the new subclass. The cleanup method is meant to give the filter a chance
+    <li>Implementing the desired filter_* method(s). Each method corresponds to a specific packet type, so the packet types of interest can be received by implementing the method for that packet. The cleanup method is meant to give the filter a chance
     to clean up or commit any work it has done before the application closes as the result of a key interrupt (e.g., if it's working with files), but this method can be ignored if it's not applicable.</li>
     <li>Adding the new filter in the FILTERS dictionary in main.py. This makes it available for selection from the command line. Note: currently, filters are expected to take no parameters in their constructors.</li>
     <li>Run the application, selecting your new filter.</li>

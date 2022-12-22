@@ -15,3 +15,4 @@ class DebugFilter(Filter):
         """Logs the packet id to the console."""
 
         logging.info(packet.packetId)
+        super().filter(packet)

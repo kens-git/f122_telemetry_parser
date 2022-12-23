@@ -1,7 +1,7 @@
 from struct import pack
 from constants.constants import (
     EventStringCode, EVENT_PACKET_LENGTH, GRID_SIZE, MAX_MARSHAL_ZONES,
-    MAX_WEATHER_SAMPLES, PacketId)
+    MAX_WEATHER_SAMPLES, NAME_SIZE, PacketId)
 
 
 def create_packet_header_data(id: PacketId) -> bytes:
@@ -31,6 +31,10 @@ def create_car_corner_data(format: str) -> bytes:
     for i in range(4):
         data += pack(f'<{format}', i)
     return data
+
+
+def create_string_data(string: str, size: int) -> bytes:
+    return pack(f'<{size}s', bytes(f'{string}\0'.ljust(size, ' '), 'utf-8'))
 
 
 def create_motion_data() -> bytes:
@@ -261,3 +265,143 @@ def create_button_data() -> bytes:
     packet += create_event_code_data(EventStringCode.BUTTON.value)
     packet += pack('<I', 1)
     return pad_event_data(packet)
+
+
+def create_participants_data() -> bytes:
+    packet = create_packet_header_data(PacketId.PARTICIPANTS)
+    packet += pack('<B', 1)
+    for _ in range(GRID_SIZE):
+        packet += pack('<B', 1)
+        packet += pack('<B', 2)
+        packet += pack('<B', 3)
+        packet += pack('<B', 4)
+        packet += pack('<B', 5)
+        packet += pack('<B', 6)
+        packet += pack('<B', 7)
+        packet += create_string_data('Pérez', NAME_SIZE)
+        packet += pack('<B', 8)
+    return packet
+
+
+def create_car_setups_data() -> bytes:
+    packet = create_packet_header_data(PacketId.CAR_SETUPS)
+    for _ in range(GRID_SIZE):
+        packet += pack('<B', 1)
+        packet += pack('<B', 2)
+        packet += pack('<B', 3)
+        packet += pack('<B', 4)
+        packet += pack('<f', 5.5)
+        packet += pack('<f', 6.5)
+        packet += pack('<f', 7.5)
+        packet += pack('<f', 8.5)
+        packet += pack('<B', 9)
+        packet += pack('<B', 10)
+        packet += pack('<B', 11)
+        packet += pack('<B', 12)
+        packet += pack('<B', 13)
+        packet += pack('<B', 14)
+        packet += pack('<B', 15)
+        packet += pack('<B', 16)
+        packet += pack('<f', 17.5)
+        packet += pack('<f', 18.5)
+        packet += pack('<f', 19.5)
+        packet += pack('<f', 20.5)
+        packet += pack('<B', 21)
+        packet += pack('<f', 22.5)
+    return packet
+
+
+def create_car_telemetry_data() -> bytes:
+    packet = create_packet_header_data(PacketId.CAR_TELEMETRY)
+    for _ in range(GRID_SIZE):
+        packet += pack('<H', 1)
+        packet += pack('<f', 2.5)
+        packet += pack('<f', 3.5)
+        packet += pack('<f', 4.5)
+        packet += pack('<B', 5)
+        packet += pack('<b', 6)
+        packet += pack('<H', 7)
+        packet += pack('<B', 8)
+        packet += pack('<B', 9)
+        packet += pack('<H', 10)
+        packet += create_car_corner_data('H')
+        packet += create_car_corner_data('B')
+        packet += create_car_corner_data('B')
+        packet += pack('<H', 11)
+        packet += create_car_corner_data('f')
+        packet += create_car_corner_data('B')
+    packet += pack('<B', 1)
+    packet += pack('<B', 2)
+    packet += pack('<b', 3)
+    return packet
+
+
+def create_car_status_data() -> bytes:
+    packet = create_packet_header_data(PacketId.CAR_STATUS)
+    for _ in range(GRID_SIZE):
+        packet += pack('<B', 1)
+        packet += pack('<B', 2)
+        packet += pack('<B', 3)
+        packet += pack('<B', 4)
+        packet += pack('<B', 5)
+        packet += pack('<f', 6.5)
+        packet += pack('<f', 7.5)
+        packet += pack('<f', 8.5)
+        packet += pack('<H', 9)
+        packet += pack('<H', 10)
+        packet += pack('<B', 11)
+        packet += pack('<B', 12)
+        packet += pack('<H', 13)
+        packet += pack('<B', 14)
+        packet += pack('<B', 15)
+        packet += pack('<B', 16)
+        packet += pack('<b', 17)
+        packet += pack('<f', 18.5)
+        packet += pack('<B', 19)
+        packet += pack('<f', 20.5)
+        packet += pack('<f', 21.5)
+        packet += pack('<f', 22.5)
+        packet += pack('<B', 23)
+    return packet
+
+
+def create_final_classification_data() -> bytes:
+    packet = create_packet_header_data(PacketId.FINAL_CLASSIFICATION)
+    return packet
+
+
+def create_lobby_info_data() -> bytes:
+    packet = create_packet_header_data(PacketId.LOBBY_INFO)
+    return packet
+
+
+def create_car_damage_data() -> bytes:
+    packet = create_packet_header_data(PacketId.CAR_DAMAGE)
+    for _ in range(GRID_SIZE):
+        packet += create_car_corner_data('f')
+        packet += create_car_corner_data('B')
+        packet += create_car_corner_data('B')
+        packet += pack('<B', 4)
+        packet += pack('<B', 5)
+        packet += pack('<B', 6)
+        packet += pack('<B', 7)
+        packet += pack('<B', 8)
+        packet += pack('<B', 9)
+        packet += pack('<B', 10)
+        packet += pack('<B', 11)
+        packet += pack('<B', 12)
+        packet += pack('<B', 13)
+        packet += pack('<B', 14)
+        packet += pack('<B', 15)
+        packet += pack('<B', 16)
+        packet += pack('<B', 17)
+        packet += pack('<B', 18)
+        packet += pack('<B', 19)
+        packet += pack('<B', 20)
+        packet += pack('<B', 21)
+    return packet
+
+
+def create_session_history_data() -> bytes:
+    packet = create_packet_header_data(PacketId.SESSION_HISTORY)
+    return packet

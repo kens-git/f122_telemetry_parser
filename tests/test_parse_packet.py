@@ -4,7 +4,10 @@ from constants.constants import (
     EventStringCode, GRID_SIZE, MAX_MARSHAL_ZONES, MAX_WEATHER_SAMPLES,
     PacketId)
 from packets.packets import (
-    EventPacket, LapDataPacket, MotionPacket, Packet, SessionPacket)
+    CarDamagePacket, CarSetupsPacket, CarStatusPacket, CarTelemetryPacket,
+    EventPacket, FinalClassificationPacket, LapDataPacket, LobbyInfoPacket,
+    MotionPacket, Packet, ParticipantsPacket, SessionHistoryPacket,
+    SessionPacket)
 import tests.packet_utilities as pu
 import utilities.data as du
 from utilities.parse import parse_packet
@@ -292,7 +295,7 @@ class TestParsePacket(TestCase):
                       parse_packet(pu.create_stop_go_data()))
         assert_packet_header(self, packet, PacketId.EVENT)
         self.assertEqual(du.to_string(packet.eventStringCode),
-                         EventStringCode.START_LIGHTS.value)
+                         EventStringCode.STOP_GO_SERVED.value)
         self.assertEqual(packet.eventDetails.StartLights.numLights, 1)
 
     def test_event_flashback(self):
@@ -312,25 +315,141 @@ class TestParsePacket(TestCase):
         self.assertEqual(packet.eventDetails.Buttons.buttonStatus, 1)
 
     def test_participants(self):
-        self.assertEqual(True, False)
+        packet = cast(ParticipantsPacket,
+                      parse_packet(pu.create_participants_data()))
+        assert_packet_header(self, packet, PacketId.PARTICIPANTS)
+        self.assertEqual(packet.numActiveCars, 1)
+        for data in packet.participants:
+            self.assertEqual(data.aiControlled, 1)
+            self.assertEqual(data.driverId, 2)
+            self.assertEqual(data.networkId, 3)
+            self.assertEqual(data.teamId, 4)
+            self.assertEqual(data.myTeam, 5)
+            self.assertEqual(data.raceNumber, 6)
+            self.assertEqual(data.nationality, 7)
+            self.assertEqual(data.name, bytes('Pérez', 'utf-8'))
+            self.assertEqual(data.yourTelemetry, 8)
 
     def test_car_setups(self):
-        self.assertEqual(True, False)
+        packet = cast(CarSetupsPacket,
+                      parse_packet(pu.create_car_setups_data()))
+        assert_packet_header(self, packet, PacketId.CAR_SETUPS)
+        for setup in packet.carSetups:
+            self.assertEqual(setup.frontWing, 1)
+            self.assertEqual(setup.rearWing, 2)
+            self.assertEqual(setup.onThrottle, 3)
+            self.assertEqual(setup.offThrottle, 4)
+            self.assertEqual(setup.frontCamber, 5.5)
+            self.assertEqual(setup.rearCamber, 6.5)
+            self.assertEqual(setup.frontToe, 7.5)
+            self.assertEqual(setup.rearToe, 8.5)
+            self.assertEqual(setup.frontSuspension, 9)
+            self.assertEqual(setup.rearSuspension, 10)
+            self.assertEqual(setup.frontAntiRollBar, 11)
+            self.assertEqual(setup.rearAntiRollBar, 12)
+            self.assertEqual(setup.frontSuspensionHeight, 13)
+            self.assertEqual(setup.rearSuspensionHeight, 14)
+            self.assertEqual(setup.brakePressure, 15)
+            self.assertEqual(setup.brakeBias, 16)
+            self.assertEqual(setup.rearLeftTyrePressure, 17.5)
+            self.assertEqual(setup.rearRightTyrePressure, 18.5)
+            self.assertEqual(setup.frontLeftTyrePressure, 19.5)
+            self.assertEqual(setup.frontRightTyrePressure, 20.5)
+            self.assertEqual(setup.ballast, 21)
+            self.assertEqual(setup.fuelLoad, 22.5)
 
     def test_car_telemetry(self):
-        self.assertEqual(True, False)
+        packet = cast(CarTelemetryPacket,
+                      parse_packet(pu.create_car_telemetry_data()))
+        assert_packet_header(self, packet, PacketId.CAR_TELEMETRY)
+        for data in packet.carTelemetryData:
+            self.assertEqual(data.speed, 1)
+            self.assertEqual(data.throttle, 2.5)
+            self.assertEqual(data.steer, 3.5)
+            self.assertEqual(data.brake, 4.5)
+            self.assertEqual(data.clutch, 5)
+            self.assertEqual(data.gear, 6)
+            self.assertEqual(data.engineRPM, 7)
+            self.assertEqual(data.drs, 8)
+            self.assertEqual(data.revLightsPercent, 9)
+            self.assertEqual(data.revLightsBitValue, 10)
+            assert_car_corner_data(self, data.brakesTemperature)
+            assert_car_corner_data(self, data.tiresSurfaceTemperature)
+            assert_car_corner_data(self, data.tiresInnerTemperature)
+            self.assertEqual(data.engineTemperature, 11)
+            assert_car_corner_data(self, data.tiresPressure)
+            assert_car_corner_data(self, data.surfaceType)
+        self.assertEqual(packet.mfdPanelIndex, 1)
+        self.assertEqual(packet.mfdPanelIndexSecondaryPlayer, 2)
+        self.assertEqual(packet.suggestedGear, 3)
 
     def test_car_status(self):
-        self.assertEqual(True, False)
+        packet = cast(CarStatusPacket,
+                      parse_packet(pu.create_car_status_data()))
+        assert_packet_header(self, packet, PacketId.CAR_STATUS)
+        for status in packet.carStatusData:
+            self.assertEqual(status.tractionControl, 1)
+            self.assertEqual(status.antiLockBrakes, 2)
+            self.assertEqual(status.fuelMix, 3)
+            self.assertEqual(status.frontBrakeBias, 4)
+            self.assertEqual(status.pitLimiterStatus, 5)
+            self.assertEqual(status.fuelInTank, 6.5)
+            self.assertEqual(status.fuelCapacity, 7.5)
+            self.assertEqual(status.fuelRemainingLaps, 8.5)
+            self.assertEqual(status.maxRPM, 9)
+            self.assertEqual(status.idleRPM, 10)
+            self.assertEqual(status.maxGears, 11)
+            self.assertEqual(status.drsAllowed, 12)
+            self.assertEqual(status.drsActivationDistance, 13)
+            self.assertEqual(status.actualTypeCompound, 14)
+            self.assertEqual(status.visualTyreCompound, 15)
+            self.assertEqual(status.tyresAgeLaps, 16)
+            self.assertEqual(status.vehicleFiaFlags, 17)
+            self.assertEqual(status.ersStoreEnergy, 18.5)
+            self.assertEqual(status.ersDeployMode, 19)
+            self.assertEqual(status.ersHarvestedThisLapMGUK, 20.5)
+            self.assertEqual(status.ersHarvestedThisLapMGUH, 21.5)
+            self.assertEqual(status.ersDeployedThisLap, 22.5)
+            self.assertEqual(status.networkPaused, 23)
 
     def test_final_classification(self):
-        self.assertEqual(True, False)
+        packet = cast(FinalClassificationPacket,
+                      parse_packet(pu.create_final_classification_data()))
+        assert_packet_header(self, packet, PacketId.FINAL_CLASSIFICATION)
 
     def test_lobby_info(self):
-        self.assertEqual(True, False)
+        packet = cast(LobbyInfoPacket,
+                      parse_packet(pu.create_lobby_info_data()))
+        assert_packet_header(self, packet, PacketId.LOBBY_INFO)
 
     def test_car_damage(self):
-        self.assertEqual(True, False)
+        packet = cast(CarDamagePacket,
+                      parse_packet(pu.create_car_damage_data()))
+        assert_packet_header(self, packet, PacketId.CAR_DAMAGE)
+        for damage in packet.carDamageData:
+            assert_car_corner_data(self, damage.tyresWear)
+            assert_car_corner_data(self, damage.tyresDamage)
+            assert_car_corner_data(self, damage.brakesDamage)
+            self.assertEqual(damage.frontLeftWingDamage, 4)
+            self.assertEqual(damage.frontRightWingDamage, 5)
+            self.assertEqual(damage.rearWingDamage, 6)
+            self.assertEqual(damage.floorDamage, 7)
+            self.assertEqual(damage.diffuserDamage, 8)
+            self.assertEqual(damage.sidepodDamage, 9)
+            self.assertEqual(damage.drsFault, 10)
+            self.assertEqual(damage.ersFault, 11)
+            self.assertEqual(damage.gearBoxDamage, 12)
+            self.assertEqual(damage.engineDamage, 13)
+            self.assertEqual(damage.engineMGUHWear, 14)
+            self.assertEqual(damage.engineESWear, 15)
+            self.assertEqual(damage.engineCEWear, 16)
+            self.assertEqual(damage.engineICEWear, 17)
+            self.assertEqual(damage.engineMGUKWear, 18)
+            self.assertEqual(damage.engineTCWear, 19)
+            self.assertEqual(damage.engineBlown, 20)
+            self.assertEqual(damage.engineSeized, 21)
 
     def test_session_history(self):
-        self.assertEqual(True, False)
+        packet = cast(SessionHistoryPacket,
+                      parse_packet(pu.create_session_history_data()))
+        assert_packet_header(self, packet, PacketId.SESSION_HISTORY)

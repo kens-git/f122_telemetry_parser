@@ -39,6 +39,9 @@ MAX_LAP_HISTORIES: Final[int] = 100
 NULL_BYTE_VALUE: Final[int] = 255
 """Value of null packet data for unsigned, single-byte types."""
 
+NAME_SIZE: Final[int] = 48
+"""Size of a driver name in the packets."""
+
 
 class EventStringCode(Enum):
     """String codes used to identify an event."""

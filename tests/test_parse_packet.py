@@ -33,6 +33,17 @@ def assert_car_corner_data(case: TestCase, data: Tuple[Any, ...]):
     case.assertEqual(data[3], 3)
 
 
+def assert_tire_stint_data(case: TestCase, data: Tuple[Any, ...]):
+    case.assertEqual(data[0], 0)
+    case.assertEqual(data[1], 1)
+    case.assertEqual(data[2], 2)
+    case.assertEqual(data[3], 3)
+    case.assertEqual(data[4], 4)
+    case.assertEqual(data[5], 5)
+    case.assertEqual(data[6], 6)
+    case.assertEqual(data[7], 7)
+
+
 class TestParsePacket(TestCase):
     def test_motion(self):
         packet = cast(MotionPacket,
@@ -416,11 +427,35 @@ class TestParsePacket(TestCase):
         packet = cast(FinalClassificationPacket,
                       parse_packet(pu.create_final_classification_data()))
         assert_packet_header(self, packet, PacketId.FINAL_CLASSIFICATION)
+        self.assertEqual(packet.numCars, 1)
+        for data in packet.classificationData:
+            self.assertEqual(data.position, 1)
+            self.assertEqual(data.numLaps, 2)
+            self.assertEqual(data.gridPosition, 3)
+            self.assertEqual(data.points, 4)
+            self.assertEqual(data.numPitStops, 5)
+            self.assertEqual(data.resultStatus, 6)
+            self.assertEqual(data.bestLapTimeInMS, 7)
+            self.assertEqual(data.totalRaceTime, 8)
+            self.assertEqual(data.penaltiesTime, 9)
+            self.assertEqual(data.numPenalties, 10)
+            self.assertEqual(data.numTyreStints, 11)
+            assert_tire_stint_data(self, data.tyreStintsActual)
+            assert_tire_stint_data(self, data.tyreStintsVisual)
+            assert_tire_stint_data(self, data.tyreStintEndLaps)
 
     def test_lobby_info(self):
         packet = cast(LobbyInfoPacket,
                       parse_packet(pu.create_lobby_info_data()))
         assert_packet_header(self, packet, PacketId.LOBBY_INFO)
+        self.assertEqual(packet.numPlayers, 1)
+        for player in packet.lobbyPlayers:
+            self.assertEqual(player.aiControlled, 1)
+            self.assertEqual(player.teamId, 2)
+            self.assertEqual(player.nationality, 3)
+            self.assertEqual(player.name, bytes('Driver', 'utf-8'))
+            self.assertEqual(player.carNumber, 4)
+            self.assertEqual(player.readyStatus, 5)
 
     def test_car_damage(self):
         packet = cast(CarDamagePacket,
@@ -453,3 +488,20 @@ class TestParsePacket(TestCase):
         packet = cast(SessionHistoryPacket,
                       parse_packet(pu.create_session_history_data()))
         assert_packet_header(self, packet, PacketId.SESSION_HISTORY)
+        self.assertEqual(packet.carIdx, 1)
+        self.assertEqual(packet.numLaps, 2)
+        self.assertEqual(packet.numTyreStints, 3)
+        self.assertEqual(packet.bestLapTimeLapNum, 4)
+        self.assertEqual(packet.bestSector1LapNum, 5)
+        self.assertEqual(packet.bestSector2LapNum, 6)
+        self.assertEqual(packet.bestSector3LapNum, 7)
+        for history in packet.lapHistoryData:
+            self.assertEqual(history.lapTimeInMS, 1)
+            self.assertEqual(history.sector1TimeInMS, 2)
+            self.assertEqual(history.sector2TimeInMS, 3)
+            self.assertEqual(history.sector3TimeInMS, 4)
+            self.assertEqual(history.lapValidBitFlags, 5)
+        for stint in packet.tyreStintHistoryData:
+            self.assertEqual(stint.endLap, 1)
+            self.assertEqual(stint.tyreActualCompound, 2)
+            self.assertEqual(stint.tyreVisualCompound, 3)

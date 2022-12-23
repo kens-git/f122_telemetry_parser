@@ -1,7 +1,8 @@
 from struct import pack
 from constants.constants import (
-    EventStringCode, EVENT_PACKET_LENGTH, GRID_SIZE, MAX_MARSHAL_ZONES,
-    MAX_WEATHER_SAMPLES, NAME_SIZE, PacketId)
+    EventStringCode, EVENT_PACKET_LENGTH, GRID_SIZE, MAX_LAP_HISTORIES,
+    MAX_MARSHAL_ZONES, MAX_TYRE_STINTS, MAX_WEATHER_SAMPLES, NAME_SIZE,
+    PacketId, TIRE_COUNT)
 
 
 def create_packet_header_data(id: PacketId) -> bytes:
@@ -28,7 +29,14 @@ def create_event_code_data(code: str) -> bytes:
 
 def create_car_corner_data(format: str) -> bytes:
     data = bytes()
-    for i in range(4):
+    for i in range(TIRE_COUNT):
+        data += pack(f'<{format}', i)
+    return data
+
+
+def create_tire_stint_data(format: str) -> bytes:
+    data = bytes()
+    for i in range(MAX_TYRE_STINTS):
         data += pack(f'<{format}', i)
     return data
 
@@ -367,11 +375,35 @@ def create_car_status_data() -> bytes:
 
 def create_final_classification_data() -> bytes:
     packet = create_packet_header_data(PacketId.FINAL_CLASSIFICATION)
+    packet += pack('<B', 1)
+    for _ in range(GRID_SIZE):
+        packet += pack('<B', 1)
+        packet += pack('<B', 2)
+        packet += pack('<B', 3)
+        packet += pack('<B', 4)
+        packet += pack('<B', 5)
+        packet += pack('<B', 6)
+        packet += pack('<I', 7)
+        packet += pack('<d', 8)
+        packet += pack('<B', 9)
+        packet += pack('<B', 10)
+        packet += pack('<B', 11)
+        packet += create_tire_stint_data('B')
+        packet += create_tire_stint_data('B')
+        packet += create_tire_stint_data('B')
     return packet
 
 
 def create_lobby_info_data() -> bytes:
     packet = create_packet_header_data(PacketId.LOBBY_INFO)
+    packet += pack('<B', 1)
+    for _ in range(GRID_SIZE):
+        packet += pack('<B', 1)
+        packet += pack('<B', 2)
+        packet += pack('<B', 3)
+        packet += create_string_data('Driver', NAME_SIZE)
+        packet += pack('<B', 4)
+        packet += pack('<B', 5)
     return packet
 
 
@@ -404,4 +436,21 @@ def create_car_damage_data() -> bytes:
 
 def create_session_history_data() -> bytes:
     packet = create_packet_header_data(PacketId.SESSION_HISTORY)
+    packet += pack('<B', 1)
+    packet += pack('<B', 2)
+    packet += pack('<B', 3)
+    packet += pack('<B', 4)
+    packet += pack('<B', 5)
+    packet += pack('<B', 6)
+    packet += pack('<B', 7)
+    for _ in range(MAX_LAP_HISTORIES):
+        packet += pack('I', 1)
+        packet += pack('H', 2)
+        packet += pack('H', 3)
+        packet += pack('H', 4)
+        packet += pack('B', 5)
+    for _ in range(MAX_TYRE_STINTS):
+        packet += pack('<B', 1)
+        packet += pack('<B', 2)
+        packet += pack('<B', 3)
     return packet

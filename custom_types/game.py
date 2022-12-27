@@ -1,4 +1,5 @@
 from ctypes import c_char, c_uint8, LittleEndianStructure
+from constants.constants import NAME_SIZE
 
 
 class F1PacketStructure(LittleEndianStructure):
@@ -10,6 +11,5 @@ class F1PacketStructure(LittleEndianStructure):
 EventCode = c_uint8 * 4
 """Defines a 4 character event code."""
 
-
-Name = c_char * 48
+Name = c_char * NAME_SIZE
 """Defines a type for names contained in the packets (UTF-8)."""
